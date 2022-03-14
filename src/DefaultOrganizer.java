@@ -1,6 +1,14 @@
 import java.io.File;
+import java.util.Calendar;
+import java.util.Date;
 
 public class DefaultOrganizer implements Organizer {
+    private Calendar calendar;
+
+    public DefaultOrganizer() {
+        calendar = Calendar.getInstance();
+    }
+
     @Override
     public void copyAndOrganize(String source, String destination) {
         System.out.printf("source = %s, dest = %s\n", source, destination);
@@ -16,7 +24,10 @@ public class DefaultOrganizer implements Organizer {
             if(f.isDirectory()) {
                 dfs(f);
             } else {
-                System.out.println(f.getName());
+                Date d = new Date(f.lastModified());
+                System.out.printf("name: %s, date: %s", f.getName(), d);
+                calendar.setTime(d);
+                System.out.printf(", month: %s\n", calendar.get(calendar.MONTH));
             }
         }
     }
