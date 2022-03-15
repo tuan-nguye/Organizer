@@ -1,7 +1,7 @@
+import javax.sound.midi.SysexMessage;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -40,14 +40,26 @@ public class DefaultOrganizer implements Organizer {
     private boolean copyFile(File f) {
         Date date = new Date(f.lastModified());
         calendar.setTime(date);
-        Path path = dest.resolve(Path.of(String.valueOf(calendar.get(calendar.YEAR)), months[calendar.get(calendar.MONTH)]));
+        String year = String.valueOf(calendar.get(calendar.YEAR));
+        String month = months[calendar.get(calendar.MONTH)] + "_" + year;
+        Path path = dest.resolve(Path.of(year, month));
+
+        if(!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch(IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
 
         try {
-            Files.createDirectories(path);
             Files.copy(f.toPath(), path.resolve(f.getName()), StandardCopyOption.COPY_ATTRIBUTES);
-        } catch(Exception e) {
+        } catch(FileAlreadyExistsException faee) {
+            System.out.printf("file %s already exists\n", f.getName());
+            return false;
+        } catch(IOException ioe) {
             System.out.printf("failed to copy file: %s, from %s to %s\n", f.getName(), f.toPath().toString(), path.toString());
-            System.out.println(e.getMessage());
+            ioe.printStackTrace();
             return false;
         }
 
