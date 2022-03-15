@@ -1,12 +1,19 @@
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Calendar;
 import java.util.Date;
 
 public class DefaultOrganizer implements Organizer {
     private Calendar calendar;
+    private Path dest;
+    private String[] months;
 
     public DefaultOrganizer() {
         calendar = Calendar.getInstance();
+        months = new String[] {"jan", "feb", "maerz", "apr", "mai", "juni", "juli", "aug",
+        "sept", "okt", "nov", "dez"};
     }
 
     @Override
@@ -16,6 +23,7 @@ public class DefaultOrganizer implements Organizer {
         if(!root.isDirectory() || !(new File(destination)).isDirectory())
             throw new IllegalArgumentException("source is not a directory");
 
+        this.dest = Path.of(destination);
         dfs(root);
     }
 
@@ -24,11 +32,25 @@ public class DefaultOrganizer implements Organizer {
             if(f.isDirectory()) {
                 dfs(f);
             } else {
-                Date d = new Date(f.lastModified());
-                System.out.printf("name: %s, date: %s", f.getName(), d);
-                calendar.setTime(d);
-                System.out.printf(", month: %s\n", calendar.get(calendar.MONTH));
+                copyFile(f);
             }
         }
+    }
+
+    private boolean copyFile(File f) {
+        Date date = new Date(f.lastModified());
+        calendar.setTime(date);
+        Path path = dest.resolve(Path.of(String.valueOf(calendar.get(calendar.YEAR)), months[calendar.get(calendar.MONTH)]));
+
+        try {
+            Files.createDirectories(path);
+            Files.copy(f.toPath(), path.resolve(f.getName()), StandardCopyOption.COPY_ATTRIBUTES);
+        } catch(Exception e) {
+            System.out.printf("failed to copy file: %s, from %s to %s\n", f.getName(), f.toPath().toString(), path.toString());
+            System.out.println(e.getMessage());
+            return false;
+        }
+
+        return true;
     }
 }
