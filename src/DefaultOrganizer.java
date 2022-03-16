@@ -1,16 +1,22 @@
-import javax.sound.midi.SysexMessage;
+import observer.Observer;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class DefaultOrganizer implements Organizer {
     private Calendar calendar;
     private Path dest;
     private String[] months;
+    private List<Observer> obs;
+    private int count;
 
     public DefaultOrganizer() {
+        obs = new ArrayList<>();
         calendar = Calendar.getInstance();
         months = new String[] {"jan", "feb", "maerz", "apr", "mai", "juni", "juli", "aug",
         "sept", "okt", "nov", "dez"};
@@ -24,6 +30,7 @@ public class DefaultOrganizer implements Organizer {
             throw new IllegalArgumentException("source is not a directory");
 
         this.dest = Path.of(destination);
+        count = 0;
         dfs(root);
     }
 
@@ -33,6 +40,7 @@ public class DefaultOrganizer implements Organizer {
                 dfs(f);
             } else {
                 copyFile(f);
+                count++;
             }
         }
     }
@@ -64,5 +72,31 @@ public class DefaultOrganizer implements Organizer {
         }
 
         return true;
+    }
+
+    public int getCount() {
+        return this.count;
+    }
+
+    @Override
+    public void register(Observer o) {
+        obs.add(o);
+    }
+
+    @Override
+    public void unregister(Observer o) {
+        obs.remove(o);
+    }
+
+    @Override
+    public void notifyObservers() {
+        for(Observer o : obs) {
+            o.update();
+        }
+    }
+
+    @Override
+    public Object getState() {
+        return count;
     }
 }
