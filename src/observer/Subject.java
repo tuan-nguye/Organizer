@@ -2,9 +2,9 @@ package observer;
 
 import observer.Observer;
 
-public interface Subject {
+public interface Subject<T> {
     void register(Observer o);
     void unregister(Observer o);
     void notifyObservers();
-    Object getState();
+    T getState();
 }

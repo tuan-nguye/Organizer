@@ -1,3 +1,5 @@
+package view;
+
 import observer.Subject;
 
 import java.util.concurrent.TimeUnit;
@@ -5,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 public class ProgressBar implements observer.Observer {
     private StringBuilder bar;
     private double percent, max;
-    private Subject s;
+    private Subject<Integer> s;
 
     public ProgressBar(int length, int max) {
         bar = initializeBar(length);
@@ -14,12 +16,7 @@ public class ProgressBar implements observer.Observer {
 
     public StringBuilder initializeBar(int length) {
         StringBuilder str = new StringBuilder();
-
-        str.append('[');
-        for(int i = 0; i < length; i++) str.append(' ');
-        str.append(']');
-
-        return str;
+        return str.append('[').append(" ".repeat(length)).append(']');
     }
 
     private double roundedPercentage(int curr) {
@@ -28,7 +25,7 @@ public class ProgressBar implements observer.Observer {
 
     @Override
     public void update() {
-        double updated = roundedPercentage((int) s.getState());
+        double updated = roundedPercentage(s.getState());
         if(updated != percent) {
             percent = updated;
             updateBar();
@@ -60,7 +57,7 @@ public class ProgressBar implements observer.Observer {
         }
     }
 
-    public void setSubject(Subject s) {
+    public void setSubject(Subject<Integer> s) {
         if(s == null) return;
         this.s = s;
     }
