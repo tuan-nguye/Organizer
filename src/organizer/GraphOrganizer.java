@@ -11,6 +11,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
 
+/*
+file count: 14800, size: 8218,852865
+
+default time: 104137,522600 ms, graph time: 158038,449500 ms
+graph is 65,893789% faster than default
+
+GraphOrganizer is slower than my first default implementation Sadeg
+ */
 public class GraphOrganizer extends Organizer {
     private FileDirectoryGraph graph;
 
