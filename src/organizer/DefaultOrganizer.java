@@ -13,7 +13,7 @@ public class DefaultOrganizer extends Organizer {
         System.out.printf("source = %s, dest = %s\n", source, destination);
         File root = new File(source);
         if(!root.isDirectory() || !(new File(destination)).isDirectory())
-            throw new IllegalArgumentException("source is not a directory");
+            throw new IllegalArgumentException("source or destination is not a directory");
 
         count = 0;
         errors.setLength(0);
@@ -54,7 +54,7 @@ public class DefaultOrganizer extends Organizer {
     private Path getDirectory(Date date, Path dest) {
         calendar.setTime(date);
         String year = String.valueOf(calendar.get(calendar.YEAR));
-        String month = months[calendar.get(calendar.MONTH)] + "_" + year;
+        String month = FileTools.folderName(months[calendar.get(calendar.MONTH)], year);
         Path path = dest.resolve(Path.of(year, month));
 
         if(!Files.exists(path)) {

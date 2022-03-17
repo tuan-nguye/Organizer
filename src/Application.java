@@ -1,5 +1,4 @@
-import organizer.DefaultOrganizer;
-import organizer.Organizer;
+import organizer.*;
 import util.FileTools;
 
 import java.io.File;
@@ -10,7 +9,7 @@ public class Application {
         File source = new File(args[0]);
         System.out.printf("file count: %d, size: %f\n", FileTools.count(source), FileTools.size(source)/1e6);
 
-        Organizer org = new DefaultOrganizer();
+        Organizer org = new GraphOrganizer();
 
         try {
             String errors = org.copyAndOrganize(args[0], args[1]);

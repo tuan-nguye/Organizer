@@ -29,4 +29,8 @@ public class FileTools {
 
         return sum;
     }
+
+    public static String folderName(String month, String year) {
+        return month + "_" + year;
+    }
 }
