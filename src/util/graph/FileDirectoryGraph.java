@@ -85,6 +85,11 @@ public class FileDirectoryGraph extends FileGraph<String[], File> {
         return temp;
     }
 
+    @Override
+    public String getErrors() {
+        return null;
+    }
+
     public static void main(String[] args) {
         String root = "C:/Users/User/Documents/bios_mod";
         FileDirectoryGraph graph = new FileDirectoryGraph();

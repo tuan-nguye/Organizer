@@ -13,7 +13,7 @@ public class Application {
         FileTools.clearToTrashbin(new File(args[1]));
 
         ProgressBar bar = new ProgressBar(20, fileCount);
-        Organizer org = new YearMonthGraphOrganizer();
+        Organizer org = new ThresholdOrganizer(5);
 
         bar.setSubject(org);
         org.register(bar);
@@ -22,6 +22,7 @@ public class Application {
             String errors = org.copyAndOrganize(args[0], args[1]);
             System.out.println(errors);
         } catch(Exception e) {
+            e.printStackTrace();
             System.out.println(e.getMessage());
         }
     }

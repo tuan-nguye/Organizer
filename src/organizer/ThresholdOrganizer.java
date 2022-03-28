@@ -8,19 +8,37 @@ import java.nio.file.Path;
 import java.util.Date;
 
 public class ThresholdOrganizer extends Organizer {
-    private FileGraph<Date, File> graph;
+    private FileGraph<Date, String> graph;
 
-    public ThresholdOrganizer() {
+    public ThresholdOrganizer(int threshold) {
+        graph = new DynamicFileGraph(threshold);
     }
 
     @Override
     public String copyAndOrganize(String source, String destination) {
-        graph = new DynamicFileGraph(destination);
-        return null;
+        graph.setRoot(destination);
+        dfs(new File(source));
+
+        return errors.toString();
+    }
+
+    private void dfs(File file) {
+        if(file.isFile()) {
+            copyFile(file);
+            count++;
+            notifyObservers();
+            return;
+        }
+
+        for(File child : file.listFiles()) {
+            dfs(child);
+        }
     }
 
     @Override
     protected Path getDirectory(Date date) {
-        return null;
+        Path dir = Path.of(graph.get(date));
+        errors.append(graph.getErrors());
+        return dir;
     }
 }
