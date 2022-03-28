@@ -1,25 +1,24 @@
-package util;
+package util.graph;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FileDirectoryGraph {
+public class FileDirectoryGraph extends FileGraph<String[], File> {
     private File root;
     private Path pathToRoot;
     private Map<File, Map<String, File>> adj;
 
-    public FileDirectoryGraph(String root) {
-        initialize(root);
+    public FileDirectoryGraph() {
+        adj = new HashMap<>();
     }
 
-    private void initialize(String root) {
+    public void setRoot(String root) {
         this.root = new File(root);
         if(!this.root.isDirectory()) this.root.mkdirs();
         pathToRoot = this.root.toPath();
-        adj = new HashMap<>();
+        adj.clear();
 
         build(this.root);
         //System.out.println(adj);
@@ -42,7 +41,7 @@ public class FileDirectoryGraph {
         }
     }
 
-    public boolean directoryExists(String... path) {
+    public boolean contains(String[] path) {
         File temp = root;
 
         for(String folder : path) {
@@ -55,7 +54,7 @@ public class FileDirectoryGraph {
         return true;
     }
 
-    public void add(String... path) {
+    public void add(String[] path) {
         File temp = root;
         StringBuilder completePath = new StringBuilder(temp.getAbsolutePath());
 
@@ -75,8 +74,8 @@ public class FileDirectoryGraph {
         //System.out.println(adj);
     }
 
-    public File get(String... path) {
-        if(!directoryExists(path)) return null;
+    public File get(String[] path) {
+        if(!contains(path)) return null;
         File temp = root;
 
         for(String folder : path) {
@@ -88,6 +87,7 @@ public class FileDirectoryGraph {
 
     public static void main(String[] args) {
         String root = "C:/Users/User/Documents/bios_mod";
-        FileDirectoryGraph graph = new FileDirectoryGraph(root);
+        FileDirectoryGraph graph = new FileDirectoryGraph();
+        graph.setRoot(root);
     }
 }

@@ -19,6 +19,18 @@ public class FileTools {
         return count;
     }
 
+    public static int countDirectFiles(File file) {
+        if(file == null) return 0;
+        else if(!file.isDirectory()) return 1;
+
+        int count = 0;
+        for(File f : file.listFiles()) {
+            if(f.isFile()) count++;
+        }
+
+        return count;
+    }
+
     public static long size(File file) {
         if(file == null) return 0;
         else if(file.isFile()) return file.length();

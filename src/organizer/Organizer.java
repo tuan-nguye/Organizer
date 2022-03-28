@@ -2,8 +2,15 @@ package organizer;
 
 import observer.Observer;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public abstract class Organizer implements observer.Subject<Integer> {
@@ -22,6 +29,23 @@ public abstract class Organizer implements observer.Subject<Integer> {
     }
 
     public abstract String copyAndOrganize(String source, String destination);
+
+    protected boolean copyFile(File f) {
+        Path path = getDirectory(new Date(f.lastModified()));
+        if(path == null) return false;
+
+        try {
+            Files.copy(f.toPath(), path.resolve(f.getName()), StandardCopyOption.COPY_ATTRIBUTES);
+        } catch(FileAlreadyExistsException faee) {
+            return true;
+        } catch(IOException ioe) {
+            errors.append("copy file error: ").append(ioe.getMessage()).append("\n");
+            return false;
+        }
+
+        return true;
+    }
+    protected abstract Path getDirectory(Date date);
 
     public int getCount() {
         return this.count;

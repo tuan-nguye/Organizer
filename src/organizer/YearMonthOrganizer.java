@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.Date;
 
-public class DefaultOrganizer extends Organizer {
+public class YearMonthOrganizer extends Organizer {
+    private Path destination;
+
     @Override
     public String copyAndOrganize(String source, String destination) {
         System.out.printf("source = %s, dest = %s\n", source, destination);
@@ -17,45 +19,31 @@ public class DefaultOrganizer extends Organizer {
 
         count = 0;
         errors.setLength(0);
-        dfs(root, Path.of(destination));
+        this.destination = Path.of(destination);
+        dfs(root);
 
         return errors.toString();
     }
 
-    private void dfs(File file, Path dest) {
+    private void dfs(File file) {
         if(file == null) return;
         else if(file.isFile()) {
-            copyFile(file, dest);
+            copyFile(file);
             count++;
+            notifyObservers();
             return;
         }
 
         for(File f : file.listFiles()) {
-            dfs(f, dest);
+            dfs(f);
         }
     }
 
-    private boolean copyFile(File f, Path dest) {
-        Path path = getDirectory(new Date(f.lastModified()), dest);
-        if(path == null) return false;
-
-        try {
-            Files.copy(f.toPath(), path.resolve(f.getName()), StandardCopyOption.COPY_ATTRIBUTES);
-        } catch(FileAlreadyExistsException faee) {
-            return true;
-        } catch(IOException ioe) {
-            errors.append("copy file error: ").append(ioe.getMessage()).append("\n");
-            return false;
-        }
-
-        return true;
-    }
-
-    private Path getDirectory(Date date, Path dest) {
+    protected Path getDirectory(Date date) {
         calendar.setTime(date);
         String year = String.valueOf(calendar.get(calendar.YEAR));
         String month = FileTools.folderName(months[calendar.get(calendar.MONTH)], year);
-        Path path = dest.resolve(Path.of(year, month));
+        Path path = destination.resolve(Path.of(year, month));
 
         if(!Files.exists(path)) {
             try {

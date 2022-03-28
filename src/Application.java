@@ -1,15 +1,23 @@
 import organizer.*;
 import util.FileTools;
+import view.ProgressBar;
 
-import java.awt.*;
 import java.io.File;
 
 public class Application {
     public static void main(String[] args) {
         File source = new File(args[0]);
-        System.out.printf("file count: %d, size: %f\n", FileTools.count(source), FileTools.size(source)/1e6);
+        int fileCount = FileTools.count(source);
+        long size = FileTools.size(source);
+        System.out.printf("file count: %d, size: %f\n", fileCount, size/1e6);
+        FileTools.clearToTrashbin(new File(args[1]));
 
-        Organizer org = new DefaultOrganizer();
+        ProgressBar bar = new ProgressBar(20, fileCount);
+        Organizer org = new YearMonthGraphOrganizer();
+
+        bar.setSubject(org);
+        org.register(bar);
+
         try {
             String errors = org.copyAndOrganize(args[0], args[1]);
             System.out.println(errors);
@@ -22,7 +30,7 @@ public class Application {
         FileTools.clearToTrashbin(new File(dest + "/test1"));
         FileTools.clearToTrashbin(new File(dest + "/test2"));
 
-        Organizer dOrg = new DefaultOrganizer(), gOrg = new GraphOrganizer();
+        Organizer dOrg = new YearMonthOrganizer(), gOrg = new YearMonthGraphOrganizer();
 
         long start = System.nanoTime(), def = 0, graph = 0;
         try {
