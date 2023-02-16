@@ -1,6 +1,6 @@
 # Default ignored files
 /shelf/
 
-/out/*
-/ant-bin/*
-/.idea/*
+out/*
+ant-bin/*
+.idea/*
