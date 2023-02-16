@@ -1,0 +1,29 @@
+<project name="File Organizer">
+    <description>
+        build file for compiling into jar file
+    </description>
+
+    <property name="jarfileName" value="organizer"/>
+    <property name="build.dir" location="ant-bin"/>
+    <property name="src.dir" location="src"/>
+
+    <target name="buildJar">
+        <manifest file="MANIFEST.MF">
+            <attribute name="Main-Class" value="Application"/>
+            <attribute name="Class-Path" value="."/>
+        </manifest>
+        <jar destfile="${build.dir}/${jarfileName}.jar" basedir="${build.dir}" includes="${build.dir}/**,${src.dir}/**" manifest="MANIFEST.MF"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="makedir">
+        <mkdir dir="${build.dir}"/>
+    </target>
+
+    <target name="compile" depends="clean, makedir">
+        <javac srcdir="${src.dir}" destdir="${build.dir}"/>
+    </target>
+</project>

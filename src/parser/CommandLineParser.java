@@ -11,6 +11,8 @@ public class CommandLineParser {
 }
 
 /*
+java -jar name.jar [command] [--option1 --option2 ... --optionN]
+
 init --size=500
 copy /source /destination --skip
 
