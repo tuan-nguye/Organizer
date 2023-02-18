@@ -2,9 +2,43 @@ package parser.command;
 
 import parser.option.Option;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
-public interface Command {
-    void execute(Properties properties, List<Option> options);
+public abstract class Command {
+    private String name;
+    private String description;
+    private String commandFormat;
+
+    public Command() {}
+
+    public abstract void execute(List<String> args, Set<Option> options);
+
+    public Command setCommandFormat(String commandFormat) {
+        if(name == null || name.isEmpty()) throw new IllegalArgumentException("illegal command name");
+        this.commandFormat = commandFormat;
+        return this;
+    }
+
+    public Command setName(String name) {
+        if(name == null || name.isEmpty()) throw new IllegalArgumentException("illegal command name");
+        this.name = name;
+        return this;
+    }
+
+    public Command setDescription(String descr) {
+        if(descr == null || descr.isEmpty()) throw new IllegalArgumentException("illegal description value");
+        this.description = descr;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }
