@@ -6,6 +6,7 @@ import java.io.File;
 
 public class Application {
     public static void main(String[] args) {
+        /*
         File source = new File(args[0]);
         int fileCount = FileTools.count(source);
         long size = FileTools.size(source);
@@ -24,6 +25,12 @@ public class Application {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println(e.getMessage());
+        }
+        */
+
+        System.out.println("Hello World!");
+        for(int i = 0; i < args.length; i++) {
+            System.out.printf("arg%d: %s\n", i, args[i]);
         }
     }
 

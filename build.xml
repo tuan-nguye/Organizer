@@ -1,4 +1,4 @@
-<project name="File Organizer">
+<project name="File Organizer" default="buildJar">
     <description>
         build file for compiling into jar file
     </description>
@@ -7,7 +7,7 @@
     <property name="build.dir" location="ant-bin"/>
     <property name="src.dir" location="src"/>
 
-    <target name="buildJar">
+    <target name="buildJar" depends="compile">
         <manifest file="MANIFEST.MF">
             <attribute name="Main-Class" value="Application"/>
             <attribute name="Class-Path" value="."/>
