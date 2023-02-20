@@ -9,7 +9,14 @@ public abstract class Command {
 
     public Command() {}
 
-    public abstract void execute(String[] args, Configuration config);
+    public void execute(String[] args, Configuration config) {
+        if(!validateConfiguration(args, config)) return;
+        executeCommand(args, config);
+    }
+
+    public abstract boolean validateConfiguration(String[] args, Configuration config);
+
+    public abstract void executeCommand(String[] args, Configuration config);
 
     public Command setCommandFormat(String commandFormat) {
         if(name == null || name.isEmpty()) throw new IllegalArgumentException("illegal command name");

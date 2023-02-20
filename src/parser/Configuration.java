@@ -43,7 +43,7 @@ public class Configuration {
             .setOptionFormat("--folderSize=N");
     Option skipOption = new FlagOption()
             .setName("skip")
-            .setDescription("skip files that already exist intead of replacing them");
+            .setDescription("skip files that already exist instead of replacing them");
 
     //Option cutOption = new FlagOption(); // cut instead of copy, kinda dangerous
     Option fileExtensionsOption = new ValueOption()

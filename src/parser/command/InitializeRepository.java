@@ -4,24 +4,40 @@ import parser.Configuration;
 import parser.option.Option;
 import parser.option.ValueOption;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 public class InitializeRepository extends Command {
-    private final int DEFAULT_FOLDER_SIZE = 500;
 
     @Override
-    public void execute(String[] args, Configuration config) {
+    public boolean validateConfiguration(String[] args, Configuration config) {
+        File propertiesFile = new File(Configuration.PROPERTY_FILE_PATH_STRING);
+
+        if(propertiesFile.exists()) {
+            System.err.println("organizer repository already initialized");
+            return false;
+        } else {
+            try {
+                propertiesFile.createNewFile();
+            } catch(IOException ioe) {
+                System.err.println("error occurred during creating config file");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public void executeCommand(String[] args, Configuration config) {
         int folderSize = getFolderSize(config);
         System.out.println("initializing repo with size=" + folderSize + "... beep beep boop");
     }
 
     private int getFolderSize(Configuration config) {
         Map<String, Option> optionMap = config.allOptions();
-        if(optionMap.containsKey("folderSize")) {
-            ValueOption folderSizeOption = (ValueOption) optionMap.get("folderSize");
-            return Integer.parseInt(folderSizeOption.getValues().get(0));
-        } else {
-            return DEFAULT_FOLDER_SIZE;
-        }
+        ValueOption folderSizeOption = (ValueOption) optionMap.get("folderSize");
+        return Integer.parseInt(folderSizeOption.getValues().get(0));
     }
 }
