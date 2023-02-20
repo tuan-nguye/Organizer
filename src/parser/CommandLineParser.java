@@ -12,7 +12,7 @@ public class CommandLineParser {
 
     public CommandLineParser() {}
 
-    public Command parse(String[] args) throws IllegalArgumentException {
+    public String[] parse(String[] args) throws IllegalArgumentException {
         List<String> commandArguments = new ArrayList<>();
 
         for(String arg : args) {
@@ -26,30 +26,19 @@ public class CommandLineParser {
             }
         }
 
-        return getCommand(commandArguments);
+        return commandArguments.toArray(new String[0]);
     }
 
-    private Command getCommand(List<String> commandArgs) throws IllegalArgumentException {
-        String strCommand = commandArgs.remove(0);
-        if(!commandMap.containsKey(strCommand)) throw new IllegalArgumentException("no command '" + strCommand + "'");
-        Command command = commandMap.get(strCommand);
-        return command;
-    }
-
-    public void addOption(Collection<Option> opts) {
-        for(Option opt : opts) {
-            addOption(opt);
-        }
+    public void addOption(Map<String, Option> opts) {
+        optionMap.putAll(opts);
     }
 
     public void addOption(Option option) {
         optionMap.put(option.getName(), option);
     }
 
-    public void addCommand(Collection<Command> comms) {
-        for(Command comm : comms) {
-            addCommand(comm);
-        }
+    public void addCommand(Map<String, Command> comms) {
+        commandMap.putAll(comms);
     }
 
     public void addCommand(Command command) {

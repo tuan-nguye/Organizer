@@ -1,11 +1,6 @@
 package parser.command;
 
-import parser.option.Option;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import parser.Configuration;
 
 public abstract class Command {
     private String name;
@@ -14,7 +9,7 @@ public abstract class Command {
 
     public Command() {}
 
-    public abstract void execute(List<String> args, Set<Option> options);
+    public abstract void execute(String[] args, Configuration config);
 
     public Command setCommandFormat(String commandFormat) {
         if(name == null || name.isEmpty()) throw new IllegalArgumentException("illegal command name");

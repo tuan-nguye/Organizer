@@ -26,6 +26,14 @@ public class Configuration {
             .setName("status")
             .setDescription("print status information in console");
 
+    Command helpCommand = new PrintHelp()
+            .setName("help")
+            .setDescription("print help text");
+
+    Command versionCommand = new PrintVersion()
+            .setName("version")
+            .setDescription("organizer version 0.1");
+
     /* available options */
     Option folderSizeOption = new ValueOption()
             .allowAllValues(true)
@@ -41,18 +49,14 @@ public class Configuration {
             .allowAllValues(true)
             .setName("fileExtensions")
             .setDescription("constrain allowed file extensions");
-    Option helpOption = new FlagOption()
-            .setName("help")
-            .setDescription("print help text");
-    Option versionOption = new FlagOption()
-            .setName("version")
-            .setDescription("print program version");
 
-    public List<Command> allCommands() {
-        List<Command> allCommands = new ArrayList<>();
-        allCommands.add(organizeCommand);
-        allCommands.add(initCommand);
-        allCommands.add(statusCommand);
+    public Map<String, Command> allCommands() {
+        Map<String, Command> allCommands = new HashMap<>();
+        allCommands.put(organizeCommand.getName(), organizeCommand);
+        allCommands.put(initCommand.getName(), initCommand);
+        allCommands.put(statusCommand.getName(), statusCommand);
+        allCommands.put(helpCommand.getName(), helpCommand);
+        allCommands.put(versionCommand.getName(), versionCommand);
         return allCommands;
     }
 
@@ -61,8 +65,6 @@ public class Configuration {
         allOptions.put(folderSizeOption.getName(), folderSizeOption);
         allOptions.put(skipOption.getName(), skipOption);
         allOptions.put(fileExtensionsOption.getName(), fileExtensionsOption);
-        allOptions.put(helpOption.getName(), helpOption);
-        allOptions.put(versionOption.getName(), versionOption);
         return allOptions;
     }
 

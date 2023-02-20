@@ -1,13 +1,10 @@
 package parser.command;
 
-import parser.option.Option;
-
-import java.util.List;
-import java.util.Set;
+import parser.Configuration;
 
 public class PrintStatus extends Command {
     @Override
-    public void execute(List<String> args, Set<Option> options) {
+    public void execute(String[] args, Configuration config) {
         // print status
         // and properties written in config file
     }

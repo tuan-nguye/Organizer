@@ -1,26 +1,28 @@
 package parser.command;
 
+import parser.Configuration;
 import parser.option.Option;
+import parser.option.ValueOption;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class InitializeRepository extends Command {
     private final int DEFAULT_FOLDER_SIZE = 500;
 
     @Override
-    public void execute(List<String> args, Set<Option> options) {
-        System.out.println("initializing repo with size=" + getFolderSize(options) + "... beep beep boop");
+    public void execute(String[] args, Configuration config) {
+        System.out.println("initializing repo with size=" + getFolderSize(config) + "... beep beep boop");
         // create hidden config file if it doesn't exist
     }
 
-    private int getFolderSize(Set<Option> options) {
-        for(Option option : options) {
-            if(option.getName().equals("folderSize")) {
-
-            }
+    private int getFolderSize(Configuration config) {
+        Map<String, Option> optionMap = config.allOptions();
+        if(optionMap.containsKey("folderSize")) {
+            ValueOption folderSizeOption = (ValueOption) optionMap.get("folderSize");
+            return Integer.parseInt(folderSizeOption.getValues().get(0));
+        } else {
+            return DEFAULT_FOLDER_SIZE;
         }
-
-        return DEFAULT_FOLDER_SIZE;
     }
 }
