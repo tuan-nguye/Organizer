@@ -18,8 +18,12 @@ public class CommandLineParser {
         for(String arg : args) {
             if(arg.startsWith(Option.PREFIX)) {
                 String strOption = arg.substring(2);
-                if(!optionMap.containsKey(strOption)) throw new IllegalArgumentException("no option '" + strOption + "'");
-                Option option = optionMap.get(strOption);
+                int idxAssign = strOption.indexOf('=');
+                String optionName;
+                if(idxAssign != -1) optionName = strOption.substring(0, idxAssign);
+                else optionName = strOption;
+                if(!optionMap.containsKey(optionName)) throw new IllegalArgumentException("no option '" + optionName + "'");
+                Option option = optionMap.get(optionName);
                 option.parseArguments(strOption);
             } else {
                 commandArguments.add(arg);

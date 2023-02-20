@@ -5,6 +5,7 @@ public abstract class Option {
 
     protected String name;
     protected String description;
+    String optionFormat;
 
     protected boolean enabled = false;
 
@@ -26,12 +27,22 @@ public abstract class Option {
         return this;
     }
 
+    public Option setOptionFormat(String format) {
+        if(format == null || format.isEmpty()) throw new IllegalArgumentException("illegal option format value");
+        this.optionFormat = format;
+        return this;
+    }
+
     public String getName() {
         return name;
     }
 
     public String getDescription() {
         return description;
+    }
+
+    public String getOptionFormat() {
+        return optionFormat;
     }
 
     public boolean isEnabled() {

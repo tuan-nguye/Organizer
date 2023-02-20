@@ -39,7 +39,7 @@ public class ValueOption extends Option {
         int idxAssign = input.indexOf('=');
         if(idxAssign == -1) throw new IllegalArgumentException("invalid input for value option");
 
-        for(String arg : input.substring(idxAssign).split("\\s*,\\s*")) {
+        for(String arg : input.substring(idxAssign+1).split("\\s*,\\s*")) {
             if(!allowAll && !acceptedValues.contains(arg)) throw new IllegalArgumentException("option '" + arg + "' doesn't exist");
             values.add(arg);
             if(!acceptsMultipleValues) {

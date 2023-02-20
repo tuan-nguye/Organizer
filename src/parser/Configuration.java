@@ -39,7 +39,8 @@ public class Configuration {
             .allowAllValues(true)
             .defaultValue("500")
             .setName("folderSize")
-            .setDescription("set max folder size threshold");
+            .setDescription("set max folder size threshold")
+            .setOptionFormat("--folderSize=N");
     Option skipOption = new FlagOption()
             .setName("skip")
             .setDescription("skip files that already exist intead of replacing them");
@@ -48,7 +49,8 @@ public class Configuration {
     Option fileExtensionsOption = new ValueOption()
             .allowAllValues(true)
             .setName("fileExtensions")
-            .setDescription("constrain allowed file extensions");
+            .setDescription("constrain allowed file extensions")
+            .setOptionFormat("--fileExtensions=[jpg, jpeg, png, txt, ...]");
 
     public Map<String, Command> allCommands() {
         Map<String, Command> allCommands = new HashMap<>();

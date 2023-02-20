@@ -5,15 +5,14 @@ import parser.option.Option;
 import parser.option.ValueOption;
 
 import java.util.Map;
-import java.util.Set;
 
 public class InitializeRepository extends Command {
     private final int DEFAULT_FOLDER_SIZE = 500;
 
     @Override
     public void execute(String[] args, Configuration config) {
-        System.out.println("initializing repo with size=" + getFolderSize(config) + "... beep beep boop");
-        // create hidden config file if it doesn't exist
+        int folderSize = getFolderSize(config);
+        System.out.println("initializing repo with size=" + folderSize + "... beep beep boop");
     }
 
     private int getFolderSize(Configuration config) {
