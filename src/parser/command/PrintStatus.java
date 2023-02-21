@@ -3,6 +3,10 @@ package parser.command;
 import parser.CommandException;
 import parser.Configuration;
 
+import java.io.File;
+import java.util.Map;
+import java.util.Properties;
+
 public class PrintStatus extends Command {
     @Override
     public void validateConfiguration(String[] args, Configuration config) throws CommandException {
@@ -13,7 +17,20 @@ public class PrintStatus extends Command {
 
     @Override
     public void executeCommand(String[] args, Configuration config) {
-        // print status
-        // and properties written in config file
+        File propertyFile = new File(Configuration.PROPERTY_FILE_PATH_STRING);
+
+        if(!propertyFile.exists()) {
+            System.out.println("not a organizer repository");
+            return;
+        } else {
+            System.out.println("organizer repository initialized\n");
+        }
+
+        Properties properties = config.getProperties();
+
+        System.out.println("Properties:");
+        for(Map.Entry<Object, Object> entry : properties.entrySet()) {
+            System.out.printf("%s=%s\n", entry.getKey(), entry.getValue());
+        }
     }
 }
