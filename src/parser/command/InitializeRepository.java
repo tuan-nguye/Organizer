@@ -1,5 +1,6 @@
 package parser.command;
 
+import parser.CommandException;
 import parser.Configuration;
 import parser.option.Option;
 import parser.option.ValueOption;
@@ -15,20 +16,16 @@ public class InitializeRepository extends Command {
     public static final int DEFAULT_FOLDER_SIZE = 500;
 
     @Override
-    public boolean validateConfiguration(String[] args, Configuration config) {
+    public void validateConfiguration(String[] args, Configuration config) throws CommandException {
         if(args.length >= 2) {
-            System.err.println("too many arguments");
-            return false;
+            throw new CommandException("too many arguments, needs 0 or 1");
         }
 
         File propertiesFile = new File(Configuration.PROPERTY_FILE_PATH_STRING);
 
         if(propertiesFile.exists()) {
-            System.err.println("organizer repository already initialized");
-            return false;
+            throw new CommandException("repository already initialized");
         }
-
-        return true;
     }
 
     @Override

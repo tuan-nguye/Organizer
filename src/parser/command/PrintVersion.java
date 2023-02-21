@@ -1,17 +1,15 @@
 package parser.command;
 
+import parser.CommandException;
 import parser.Configuration;
 
 public class PrintVersion extends Command {
 
     @Override
-    public boolean validateConfiguration(String[] args, Configuration config) {
+    public void validateConfiguration(String[] args, Configuration config) throws CommandException {
         if(args.length != 0) {
-            System.err.println("print command doesn't take any arguments");
-            return false;
+            throw new CommandException("printing version command doesn't take any arguments");
         }
-
-        return true;
     }
 
     @Override

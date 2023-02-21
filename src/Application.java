@@ -1,6 +1,8 @@
 import organizer.*;
+import parser.CommandException;
 import parser.CommandLineParser;
 import parser.Configuration;
+import parser.ParseException;
 import parser.command.Command;
 import parser.command.PrintHelp;
 import util.FileTools;
@@ -46,36 +48,21 @@ public class Application {
         // parse the arguments from the command line
         try {
             parsedArgs = parser.parse(args);
-        } catch(IllegalArgumentException iae) {
-            iae.printStackTrace();
+        } catch(ParseException pe) {
+            System.err.println(pe.getMessage());
             System.exit(1);
         }
 
-        // create command object, if no command was given print help
-        Command command = null;
 
-        if(parsedArgs == null) {
-            System.err.println("argument array is null, wtf???");
-            System.exit(1);
-        } else if(parsedArgs.length < 1) {
-            System.err.println("command is missing");
-            command = new PrintHelp();
-        } else {
-            String commandStr = parsedArgs[0];
-            parsedArgs = Arrays.copyOfRange(parsedArgs, 1, parsedArgs.length);
-            command = commandMap.get(commandStr);
-            if(command == null) {
-                System.err.println("Command '" + commandStr + "' doesn't exist");
-                System.exit(1);
-            }
-        }
+        // create command object
+        Command command = commandMap.get(parsedArgs[0]);
+        parsedArgs = Arrays.copyOfRange(parsedArgs, 1, parsedArgs.length);
 
         // execute the command
         try {
             command.execute(parsedArgs, configuration);
-        } catch(IllegalArgumentException iae) {
-            System.err.println("error when executing command");
-            iae.printStackTrace();
+        } catch(CommandException ce) {
+            System.err.println(ce.getMessage());
             System.exit(1);
         }
     }

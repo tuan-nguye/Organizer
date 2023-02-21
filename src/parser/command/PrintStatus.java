@@ -1,16 +1,14 @@
 package parser.command;
 
+import parser.CommandException;
 import parser.Configuration;
 
 public class PrintStatus extends Command {
     @Override
-    public boolean validateConfiguration(String[] args, Configuration config) {
+    public void validateConfiguration(String[] args, Configuration config) throws CommandException {
         if(args.length != 0) {
-            System.err.println("status command doesn't take in arguments");
-            return false;
+            throw new CommandException("status command doesn't take in arguments");
         }
-
-        return true;
     }
 
     @Override

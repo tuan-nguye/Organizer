@@ -1,5 +1,6 @@
 package parser.command;
 
+import parser.CommandException;
 import parser.Configuration;
 import parser.option.Option;
 
@@ -8,13 +9,10 @@ import java.util.Map;
 
 public class PrintHelp extends Command {
     @Override
-    public boolean validateConfiguration(String[] args, Configuration config) {
+    public void validateConfiguration(String[] args, Configuration config) throws CommandException {
         if(args.length != 0) {
-            System.err.println("help command doesn't take in arguments");
-            return false;
+            throw new CommandException("help command doesn't take in arguments");
         }
-
-        return true;
     }
 
     @Override

@@ -1,17 +1,15 @@
 package parser.command;
 
+import parser.CommandException;
 import parser.Configuration;
 
 public class CopyFiles extends Command {
     @Override
-    public boolean validateConfiguration(String[] args, Configuration config) {
+    public void validateConfiguration(String[] args, Configuration config) throws CommandException {
         if(args.length != 2) {
-            System.err.println("invalid number of arguments");
-            System.err.println("usage: " + getCommandFormat());
-            return false;
+            throw new CommandException("invalid number of arguments, needs 2");
         } // check if source and destination exist, destination is valid repo
 
-        return true;
     }
 
     @Override

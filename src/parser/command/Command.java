@@ -1,5 +1,6 @@
 package parser.command;
 
+import parser.CommandException;
 import parser.Configuration;
 
 public abstract class Command {
@@ -9,12 +10,12 @@ public abstract class Command {
 
     public Command() {}
 
-    public void execute(String[] args, Configuration config) {
-        if(!validateConfiguration(args, config)) return;
+    public void execute(String[] args, Configuration config) throws CommandException {
+        validateConfiguration(args, config);
         executeCommand(args, config);
     }
 
-    public abstract boolean validateConfiguration(String[] args, Configuration config);
+    public abstract void validateConfiguration(String[] args, Configuration config) throws CommandException;
 
     public abstract void executeCommand(String[] args, Configuration config);
 

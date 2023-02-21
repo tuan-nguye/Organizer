@@ -1,5 +1,7 @@
 package parser.option;
 
+import parser.ParseException;
+
 public abstract class Option {
     public static final String PREFIX = "--";
 
@@ -11,7 +13,7 @@ public abstract class Option {
 
     public Option() {}
 
-    public abstract void parseArguments(String input);
+    public abstract void parseArguments(String input) throws ParseException;
 
     public abstract Option defaultValue(String value);
 

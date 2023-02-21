@@ -12,7 +12,13 @@ public class CommandLineParser {
 
     public CommandLineParser() {}
 
-    public String[] parse(String[] args) throws IllegalArgumentException {
+    /**
+     * parse command line to get command, arguments and options
+     * @param args
+     * @return command and additional arguments in a string array,
+     *          throws exception on invalid configuration
+     */
+    public String[] parse(String[] args) throws ParseException {
         List<String> commandArguments = new ArrayList<>();
 
         for(String arg : args) {
@@ -22,7 +28,9 @@ public class CommandLineParser {
                 String optionName;
                 if(idxAssign != -1) optionName = strOption.substring(0, idxAssign);
                 else optionName = strOption;
-                if(!optionMap.containsKey(optionName)) throw new IllegalArgumentException("no option '" + optionName + "'");
+                if(!optionMap.containsKey(optionName)) {
+                    throw new ParseException(String.format("option %s doesn't exist", optionName));
+                }
                 Option option = optionMap.get(optionName);
                 option.parseArguments(strOption);
             } else {
@@ -30,7 +38,21 @@ public class CommandLineParser {
             }
         }
 
+        validateCommand(commandArguments);
         return commandArguments.toArray(new String[0]);
+    }
+
+    private void validateCommand(List<String> commandArguments) throws ParseException {
+        // throw exception when no command was given
+        if(commandArguments.isEmpty()) {
+            throw new ParseException("command is missing");
+        }
+
+        // throw exception when given command doesn't exist
+        String command = commandArguments.get(0);
+        if(!commandMap.containsKey(command)) {
+            throw new ParseException(String.format("command '%s' doesn't exist", command));
+        }
     }
 
     public void addOption(Map<String, Option> opts) {
@@ -49,11 +71,3 @@ public class CommandLineParser {
         commandMap.put(command.getName(), command);
     }
 }
-
-/*
-java -jar name.jar [command] [--option1 --option2 ... --optionN]
-
-init --size=500
-copy /source /destination --skip
-
- */

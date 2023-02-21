@@ -1,5 +1,6 @@
 package parser.command;
 
+import parser.CommandException;
 import parser.Configuration;
 import util.FileTools;
 
@@ -8,19 +9,23 @@ import java.util.Properties;
 
 public class SetProperty extends Command {
     @Override
-    public boolean validateConfiguration(String[] args, Configuration config) {
+    public void validateConfiguration(String[] args, Configuration config) throws CommandException {
         if(args.length == 0) {
-            System.err.println("property arguments missing");
-            return false;
+            throw new CommandException("property arguments missing");
         }
 
         File propertyFile = new File(Configuration.PROPERTY_FILE_PATH_STRING);
         if(!propertyFile.exists()) {
-            System.err.println("can't set property, repository not initialized");
-            return false;
+            throw new CommandException("can't set property, repository not initialized");
         }
 
-        return true;
+        String property = args[0].substring(0, args[0].indexOf('='));
+
+        if(!config.getPropertyNames().contains(property)) {
+            throw new CommandException(String.format("property '%s' unknown", property));
+        } else if(!config.getModifiableProperties().contains(property)) {
+            throw new CommandException(String.format("property '%s' can't be modified", property));
+        }
     }
 
     @Override

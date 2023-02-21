@@ -1,5 +1,7 @@
 package parser.option;
 
+import parser.ParseException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,18 +37,20 @@ public class ValueOption extends Option {
     }
 
     @Override
-    public void parseArguments(String input) {
+    public void parseArguments(String input) throws ParseException {
         int idxAssign = input.indexOf('=');
         if(idxAssign == -1) throw new IllegalArgumentException("invalid input for value option");
-        String[] args = input.substring(idxAssign+1).split("\\s*,\\s*");
+        String[] args = input.substring(idxAssign+1).split(",");
 
         for(int i = 0; i < args.length; i++) {
-            if(!allowAll && !acceptedValues.contains(args[i])) throw new IllegalArgumentException("option '" + args[i] + "' doesn't exist");
-            values.add(args[i]);
+            if(!allowAll && !acceptedValues.contains(args[i])) {
+                throw new ParseException(String.format("option '%s' doesn't allow value '%s'", name, args[i]));
+            }
             if(i >= 1 && !acceptsMultipleValues) {
                 System.err.println("too many arguments for " + name + ", the extraneous values will be ignored");
                 break;
             }
+            values.add(args[i]);
         }
     }
 

@@ -1,8 +1,10 @@
 package parser.option;
 
+import parser.ParseException;
+
 public class FlagOption extends Option {
     @Override
-    public void parseArguments(String input) {
+    public void parseArguments(String input) throws ParseException {
         enabled = true;
     }
 

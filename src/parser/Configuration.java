@@ -4,10 +4,6 @@ import parser.command.*;
 import parser.option.*;
 import util.FileTools;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.*;
 
 public class Configuration {
@@ -15,6 +11,10 @@ public class Configuration {
     public static final String PROPERTY_FILE_PATH_STRING = ".organizer_config.txt";
 
     private Properties properties;
+
+    Set<String> propertyNames = new HashSet<>(Arrays.asList("folderSize"));
+
+    Set<String> modifiableProperties = new HashSet<>();
 
     /* available commands */
     Command organizeCommand = new CopyFiles()
@@ -24,7 +24,7 @@ public class Configuration {
     Command initCommand = new InitializeRepository()
             .setName("init")
             .setDescription("initialize organizer destination directory, default folder size is 500")
-            .setCommandFormat("init [--folderSize=500]");
+            .setCommandFormat("init [folderSize]");
     Command statusCommand = new PrintStatus()
             .setName("status")
             .setDescription("print status information in console");
@@ -50,9 +50,10 @@ public class Configuration {
     //Option cutOption = new FlagOption(); // cut instead of copy, kinda dangerous
     Option fileExtensionsOption = new ValueOption()
             .allowAllValues(true)
+            .acceptMultipleValues(true)
             .setName("fileExtensions")
             .setDescription("constrain allowed file extensions")
-            .setOptionFormat("--fileExtensions=[jpg, jpeg, png, txt, ...]");
+            .setOptionFormat("--fileExtensions=[jpg,jpeg,png,txt,...]");
 
     public Configuration() {
         properties = FileTools.readProperties(PROPERTY_FILE_PATH_STRING);
@@ -78,5 +79,13 @@ public class Configuration {
 
     public Properties getProperties() {
         return (Properties) properties.clone();
+    }
+
+    public Set<String> getPropertyNames() {
+        return new HashSet<>(propertyNames);
+    }
+
+    public Set<String> getModifiableProperties() {
+        return new HashSet<>(modifiableProperties);
     }
 }
