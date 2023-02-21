@@ -9,6 +9,7 @@ import view.ProgressBar;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Properties;
 
 public class Application {
     public static void main(String[] args) {

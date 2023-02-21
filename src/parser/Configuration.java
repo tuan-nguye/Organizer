@@ -2,6 +2,7 @@ package parser;
 
 import parser.command.*;
 import parser.option.*;
+import util.FileTools;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +13,8 @@ import java.util.*;
 public class Configuration {
     /* file where properties are stored */
     public static final String PROPERTY_FILE_PATH_STRING = ".organizer_config.txt";
+
+    private Properties properties;
 
     /* available commands */
     Command organizeCommand = new CopyFiles()
@@ -34,13 +37,12 @@ public class Configuration {
             .setName("version")
             .setDescription("organizer version 0.1");
 
+    Command setPropertyCommand = new SetProperty()
+            .setName("setProperty")
+            .setDescription("set and store property, currently available properties: folderSize=N: set folder size threshold")
+            .setCommandFormat("setProperty [property=value]");
+
     /* available options */
-    Option folderSizeOption = new ValueOption()
-            .allowAllValues(true)
-            .defaultValue("500")
-            .setName("folderSize")
-            .setDescription("set max folder size threshold")
-            .setOptionFormat("--folderSize=N");
     Option skipOption = new FlagOption()
             .setName("skip")
             .setDescription("skip files that already exist instead of replacing them");
@@ -52,6 +54,10 @@ public class Configuration {
             .setDescription("constrain allowed file extensions")
             .setOptionFormat("--fileExtensions=[jpg, jpeg, png, txt, ...]");
 
+    public Configuration() {
+        properties = FileTools.readProperties(PROPERTY_FILE_PATH_STRING);
+    }
+
     public Map<String, Command> allCommands() {
         Map<String, Command> allCommands = new HashMap<>();
         allCommands.put(organizeCommand.getName(), organizeCommand);
@@ -59,40 +65,18 @@ public class Configuration {
         allCommands.put(statusCommand.getName(), statusCommand);
         allCommands.put(helpCommand.getName(), helpCommand);
         allCommands.put(versionCommand.getName(), versionCommand);
+        allCommands.put(setPropertyCommand.getName(), setPropertyCommand);
         return allCommands;
     }
 
     public Map<String, Option> allOptions() {
         Map<String, Option> allOptions = new HashMap<>();
-        allOptions.put(folderSizeOption.getName(), folderSizeOption);
         allOptions.put(skipOption.getName(), skipOption);
         allOptions.put(fileExtensionsOption.getName(), fileExtensionsOption);
         return allOptions;
     }
 
-    public List<Option> optionsStoredInPropertyFile() {
-        List<Option> options = new ArrayList<>();
-        options.add(folderSizeOption);
-        return options;
-    }
-
-    /**
-     * read properties from hidden property file
-     * @return returns properties map, if the file doesn't exist or is empty, the map is empty
-     */
-    public Properties readProperties() {
-        Properties properties = new Properties();
-
-        try {
-            File propertyFile = new File(PROPERTY_FILE_PATH_STRING);
-            FileInputStream in = new FileInputStream(propertyFile);
-            properties.load(in);
-            in.close();
-        } catch(FileNotFoundException fnfe) {
-        } catch(IOException ioe) {
-            ioe.printStackTrace();
-        }
-
-        return properties;
+    public Properties getProperties() {
+        return (Properties) properties.clone();
     }
 }

@@ -1,10 +1,12 @@
 package util;
 
+import parser.Configuration;
+
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 
 public class FileTools {
     public static int count(File file) {
@@ -95,5 +97,59 @@ public class FileTools {
 
     public static String folderName(String month, String year) {
         return month + "_" + year;
+    }
+
+    /**
+     * read properties from hidden property file
+     * @return returns properties map, if the file doesn't exist it returns empty map
+     */
+    public static Properties readProperties(String path) {
+        Properties properties = new Properties();
+        File propertyFile = new File(path);
+
+        try {
+            FileInputStream in = new FileInputStream(propertyFile);
+            properties.load(in);
+            in.close();
+        } catch(FileNotFoundException fnfe) {
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        return properties;
+    }
+
+    /**
+     * update and store new properties
+     * @param properties
+     * @param path
+     */
+    public static void storeProperties(Properties properties, String path) {
+        FileWriter writer = null;
+
+        try {
+            File propertyFile = new File(path);
+            setFileVisibility(propertyFile, true);
+            writer = new FileWriter(propertyFile);
+            properties.store(writer, "");
+            setFileVisibility(propertyFile, false);
+        } catch(IOException ioe) {
+            System.err.println("error occurred writing property file");
+            ioe.printStackTrace();
+        } finally {
+            try {
+                writer.close();
+            } catch(IOException ioe) {}
+        }
+    }
+
+    public static boolean setFileVisibility(File file, boolean visible) {
+        try {
+            Files.setAttribute(file.toPath(), "dos:hidden", !visible);
+        } catch(IOException ioe) {
+            return false;
+        }
+
+        return true;
     }
 }

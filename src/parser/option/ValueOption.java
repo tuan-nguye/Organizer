@@ -38,11 +38,12 @@ public class ValueOption extends Option {
     public void parseArguments(String input) {
         int idxAssign = input.indexOf('=');
         if(idxAssign == -1) throw new IllegalArgumentException("invalid input for value option");
+        String[] args = input.substring(idxAssign+1).split("\\s*,\\s*");
 
-        for(String arg : input.substring(idxAssign+1).split("\\s*,\\s*")) {
-            if(!allowAll && !acceptedValues.contains(arg)) throw new IllegalArgumentException("option '" + arg + "' doesn't exist");
-            values.add(arg);
-            if(!acceptsMultipleValues) {
+        for(int i = 0; i < args.length; i++) {
+            if(!allowAll && !acceptedValues.contains(args[i])) throw new IllegalArgumentException("option '" + args[i] + "' doesn't exist");
+            values.add(args[i]);
+            if(i >= 1 && !acceptsMultipleValues) {
                 System.err.println("too many arguments for " + name + ", the extraneous values will be ignored");
                 break;
             }
