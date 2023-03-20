@@ -4,3 +4,4 @@
 out/*
 ant-bin/*
 .idea/*
+.attach_pid*

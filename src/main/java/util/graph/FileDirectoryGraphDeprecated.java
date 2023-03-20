@@ -5,12 +5,12 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FileDirectoryGraph extends FileGraph<String[], File> {
+public class FileDirectoryGraphDeprecated extends FileGraphDeprecated<String[], File> {
     private File root;
     private Path pathToRoot;
     private Map<File, Map<String, File>> adj;
 
-    public FileDirectoryGraph() {
+    public FileDirectoryGraphDeprecated() {
         adj = new HashMap<>();
     }
 
@@ -92,7 +92,7 @@ public class FileDirectoryGraph extends FileGraph<String[], File> {
 
     public static void main(String[] args) {
         String root = "C:/Users/User/Documents/bios_mod";
-        FileDirectoryGraph graph = new FileDirectoryGraph();
+        FileDirectoryGraphDeprecated graph = new FileDirectoryGraphDeprecated();
         graph.setRoot(root);
     }
 }

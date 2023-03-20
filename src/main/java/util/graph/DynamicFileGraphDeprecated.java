@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class DynamicFileGraph extends FileGraph<Date, String> {
+public class DynamicFileGraphDeprecated extends FileGraphDeprecated<Date, String> {
     class Node {
         public String name;
         public int depth;
@@ -45,7 +45,7 @@ public class DynamicFileGraph extends FileGraph<Date, String> {
     private int[] timeunitFromDepth;
     private StringBuilder errors;
 
-    public DynamicFileGraph(int threshold) {
+    public DynamicFileGraphDeprecated(int threshold) {
         THRESHOLD = threshold;
         calendar = Calendar.getInstance();
         timeunitFromDepth = new int[] {calendar.YEAR, calendar.MONTH, calendar.DAY_OF_MONTH,
@@ -181,7 +181,7 @@ public class DynamicFileGraph extends FileGraph<Date, String> {
     }
 
     public static void main(String[] args) {
-        DynamicFileGraph g = new DynamicFileGraph(10);
+        DynamicFileGraphDeprecated g = new DynamicFileGraphDeprecated(10);
         g.setRoot("C:\\Users\\User\\Documents\\test");
         System.out.println(g.print(g.root));
 

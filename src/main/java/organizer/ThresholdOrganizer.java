@@ -1,17 +1,17 @@
 package organizer;
 
-import util.graph.DynamicFileGraph;
-import util.graph.FileGraph;
+import util.graph.DynamicFileGraphDeprecated;
+import util.graph.FileGraphDeprecated;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Date;
 
 public class ThresholdOrganizer extends Organizer {
-    private FileGraph<Date, String> graph;
+    private FileGraphDeprecated<Date, String> graph;
 
     public ThresholdOrganizer(int threshold) {
-        graph = new DynamicFileGraph(threshold);
+        graph = new DynamicFileGraphDeprecated(threshold);
     }
 
     @Override

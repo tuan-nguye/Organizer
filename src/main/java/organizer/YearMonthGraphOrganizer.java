@@ -1,8 +1,8 @@
 package organizer;
 
-import util.graph.FileDirectoryGraph;
+import util.graph.FileDirectoryGraphDeprecated;
 import util.FileTools;
-import util.graph.FileGraph;
+import util.graph.FileGraphDeprecated;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -17,11 +17,11 @@ graph is 65,893789% faster than default
 GraphOrganizer is slower than my first default implementation Sadeg
  */
 public class YearMonthGraphOrganizer extends Organizer {
-    private FileGraph<String[], File> graph;
+    private FileGraphDeprecated<String[], File> graph;
 
     @Override
     public String copyAndOrganize(String source, String destination) {
-        graph = new FileDirectoryGraph();
+        graph = new FileDirectoryGraphDeprecated();
         graph.setRoot(destination);
         File root = new File(source);
         if(!root.isDirectory() || !(new File(destination)).isDirectory())
