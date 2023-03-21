@@ -6,6 +6,9 @@ import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Properties;
 
 public class FileTools {
@@ -151,5 +154,11 @@ public class FileTools {
         }
 
         return true;
+    }
+
+    public static LocalDateTime dateTime(long lastModified) {
+        Instant instant = Instant.ofEpochMilli(lastModified);
+        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        return dateTime;
     }
 }

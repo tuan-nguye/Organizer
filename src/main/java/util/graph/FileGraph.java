@@ -61,7 +61,7 @@ public class FileGraph {
         }
 
         node.fileCount = fileCount;
-        node.leaf = fileCount != 0;
+        node.leaf = node.children.isEmpty();
     }
 
     public void printFileStructure() {

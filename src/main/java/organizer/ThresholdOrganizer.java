@@ -3,16 +3,14 @@ package organizer;
 import organizer.copy.ICopy;
 import organizer.copy.Move;
 import parser.Configuration;
+import util.FileTools;
 import util.graph.FileGraph;
 import util.time.DateIterator;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 public class ThresholdOrganizer extends Organizer {
     private FileGraph fileGraph;
@@ -45,45 +43,43 @@ public class ThresholdOrganizer extends Organizer {
         }
     }
     protected boolean copyFile(File f) {
-        Instant instant = Instant.ofEpochMilli(f.lastModified());
-        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-        Path path = getDirectory(dateTime);
+        LocalDateTime dateTime = FileTools.dateTime(f.lastModified());
+        FileGraph.FileNode node = getDirectory(dateTime);
+        Path path = Path.of(node.path);
         if(path == null) return false;
 
         try {
             operation.copy(f.toPath(), path.resolve(f.getName()));
         } catch(IOException ioe) {
-            errors.append("copy file error: ").append(ioe.getMessage()).append("\n");
+            errors.append("warning: ").append(ioe.getMessage()).append("\n");
             return false;
         }
 
+        node.fileCount++;
+        reorganize(node);
         return true;
     }
 
-    protected Path getDirectory(LocalDateTime dateTime) {
+    protected FileGraph.FileNode getDirectory(LocalDateTime dateTime) {
         FileGraph.FileNode node = fileGraph.getNode(dateTime);
         new File(node.path).mkdir();
-
-        if(node.fileCount >= threshold) {
-            reorganize(node);
-            return getDirectory(dateTime);
-        }
-
-        node.fileCount++;
-        return Path.of(node.path);
+        return node;
     }
 
     private void reorganize(FileGraph.FileNode node) {
+        if(node.fileCount <= threshold) return;
+
         File directory = new File(node.path);
         String folder = node.depth > 0 ? node.path.substring(node.path.lastIndexOf(File.separator)+1) : "";
 
         for(File file : directory.listFiles(a -> a.isFile())) {
             if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
-            DateIterator it = new DateIterator(dateTime(file.lastModified()));
+            DateIterator it = new DateIterator(FileTools.dateTime(file.lastModified()));
 
             for(int i = 0; i < node.depth; i++) it.next();
 
-            File nextDirFile = new File(node.path, folder + '_' + it.next());
+            String nextFolder = folder.isEmpty() ? it.next() : folder + '_' + it.next();
+            File nextDirFile = new File(node.path, nextFolder);
             if(!nextDirFile.exists()) nextDirFile.mkdir();
 
             try {
@@ -95,11 +91,8 @@ public class ThresholdOrganizer extends Organizer {
         }
 
         fileGraph.update(node);
-    }
-
-    private LocalDateTime dateTime(long ms) {
-        Instant instant = Instant.ofEpochMilli(ms);
-        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-        return dateTime;
+        for(FileGraph.FileNode child : node.children.values()) {
+            reorganize(child);
+        }
     }
 }
