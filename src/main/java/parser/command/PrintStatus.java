@@ -17,7 +17,7 @@ public class PrintStatus extends Command {
 
     @Override
     public void executeCommand(String[] args, Configuration config) {
-        File propertyFile = new File(Configuration.PROPERTY_FILE_PATH_STRING);
+        File propertyFile = new File(Configuration.PROPERTY_FILE_NAME_STRING);
 
         if(!propertyFile.exists()) {
             System.out.println("not a organizer repository");

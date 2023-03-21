@@ -4,14 +4,11 @@ import parser.CommandLineParser;
 import parser.Configuration;
 import parser.ParseException;
 import parser.command.Command;
-import parser.command.PrintHelp;
 import util.FileTools;
-import view.ProgressBar;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Properties;
 
 public class Application {
     public static void main(String[] args) {
@@ -65,33 +62,5 @@ public class Application {
             System.err.println(ce.getMessage());
             System.exit(1);
         }
-    }
-
-    private static void defaultVsGraph(String source, String dest) {
-        FileTools.clearToTrashbin(new File(dest + "/test1"));
-        FileTools.clearToTrashbin(new File(dest + "/test2"));
-
-        Organizer dOrg = new YearMonthOrganizer(), gOrg = new YearMonthGraphOrganizer();
-
-        long start = System.nanoTime(), def = 0, graph = 0;
-        try {
-            String errors = dOrg.copyAndOrganize(source, dest + "/test1");
-            def = System.nanoTime() - start;
-            System.out.println(errors);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        start = System.nanoTime();
-        try {
-            String errors = gOrg.copyAndOrganize(source, dest + "/test2");
-            graph = System.nanoTime() - start;
-            System.out.println(errors);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        System.out.printf("default time: %f, graph time: %f\n", def / 1e6, graph / 1e6);
-        System.out.printf("graph is %f%% faster than default\n", 100 * (def / (double) graph));
     }
 }

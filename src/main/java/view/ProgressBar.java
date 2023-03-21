@@ -20,7 +20,7 @@ public class ProgressBar implements observer.Observer {
     }
 
     private double roundedPercentage(int curr) {
-        return 0.01*(Math.round((curr/max)/0.01));
+        return 0.0001*(Math.round((curr/max)/0.0001));
     }
 
     @Override
@@ -52,7 +52,7 @@ public class ProgressBar implements observer.Observer {
         double step = 1/(double) (bar.length()-2);
 
         for(int i = 0; i < bar.length()-2; i++) {
-            if(percent >= (i+1)*step) bar.setCharAt(i+1, '=');
+            if(percent >= (i+1)*step) bar.setCharAt(i+1, '#');
             else break;
         }
     }
@@ -63,7 +63,8 @@ public class ProgressBar implements observer.Observer {
     }
 
     public void print() {
-        System.out.print("\r" + bar + " " + (int) (percent*100) + "%");
+        String out = String.format("\r%s %.2f%%", bar, percent*100);
+        System.out.print(out);
     }
 
     public static void main(String[] args) {

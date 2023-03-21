@@ -1,43 +1,38 @@
 package organizer;
 
 import observer.Observer;
+import organizer.copy.ICopy;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 public abstract class Organizer implements observer.Subject<Integer> {
-    protected Calendar calendar;
-    protected String[] months;
-    private List<Observer> obs;
+    private List<Observer> obs = new ArrayList<>();
     protected int count;
-    protected StringBuilder errors;
+    protected StringBuilder errors = new StringBuilder();
+    protected ICopy operation;
 
-    public Organizer() {
-        obs = new ArrayList<>();
-        calendar = Calendar.getInstance();
-        months = new String[] {"jan", "feb", "maerz", "apr", "mai", "juni", "juli",
-                "aug", "sept", "okt", "nov", "dez"};
-        errors = new StringBuilder();
+    public Organizer(ICopy operation) {
+        this.operation = operation;
     }
 
-    public abstract String copyAndOrganize(String source, String destination);
+    public abstract String organize(String source, String destination);
 
     protected boolean copyFile(File f) {
-        Path path = getDirectory(new Date(f.lastModified()));
+        Instant instant = Instant.ofEpochMilli(f.lastModified());
+        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        Path path = getDirectory(dateTime);
         if(path == null) return false;
 
         try {
-            Files.copy(f.toPath(), path.resolve(f.getName()), StandardCopyOption.COPY_ATTRIBUTES);
-        } catch(FileAlreadyExistsException faee) {
-            return true;
+            operation.copy(f.toPath(), path.resolve(f.getName()));
         } catch(IOException ioe) {
             errors.append("copy file error: ").append(ioe.getMessage()).append("\n");
             return false;
@@ -45,7 +40,7 @@ public abstract class Organizer implements observer.Subject<Integer> {
 
         return true;
     }
-    protected abstract Path getDirectory(Date date);
+    protected abstract Path getDirectory(LocalDateTime dateTime);
 
     public int getCount() {
         return this.count;

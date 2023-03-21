@@ -1,24 +1,25 @@
 package organizer;
 
-import util.graph.DynamicFileGraphDeprecated;
-import util.graph.FileGraphDeprecated;
+import organizer.copy.ICopy;
+import parser.Configuration;
+import util.graph.FileGraph;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class ThresholdOrganizer extends Organizer {
-    private FileGraphDeprecated<Date, String> graph;
+    private FileGraph fileGraph;
 
-    public ThresholdOrganizer(int threshold) {
-        graph = new DynamicFileGraphDeprecated(threshold);
+    public ThresholdOrganizer(ICopy op) {
+        super(op);
     }
 
     @Override
-    public String copyAndOrganize(String source, String destination) {
-        graph.setRoot(destination);
-        dfs(new File(source));
-
+    public String organize(String source, String destination) {
+        fileGraph = new FileGraph(destination);
+        dfs(new File(fileGraph.getRoot().path));
         return errors.toString();
     }
 
@@ -28,17 +29,15 @@ public class ThresholdOrganizer extends Organizer {
             count++;
             notifyObservers();
             return;
-        }
-
-        for(File child : file.listFiles()) {
-            dfs(child);
+        } else {
+            for(File child : file.listFiles()) {
+                dfs(child);
+            }
         }
     }
 
     @Override
-    protected Path getDirectory(Date date) {
-        Path dir = Path.of(graph.get(date));
-        errors.append(graph.getErrors());
-        return dir;
+    protected Path getDirectory(LocalDateTime dateTime) {
+        return Path.of(fileGraph.getNode(dateTime).path);
     }
 }

@@ -8,7 +8,8 @@ import java.util.*;
 
 public class Configuration {
     /* file where properties are stored */
-    public static final String PROPERTY_FILE_PATH_STRING = ".organizer_config.txt";
+    public static String PROPERTY_FILE_NAME_STRING = ".organizer_config.txt";
+    public static String PROPERTY_FILE_PATH_STRING = "";
 
     private Properties properties;
 
@@ -17,7 +18,7 @@ public class Configuration {
     Set<String> modifiableProperties = new HashSet<>();
 
     /* available commands */
-    Command organizeCommand = new CopyFiles()
+    Command organizeCommand = new OrganizeFiles()
             .setName("organize")
             .setDescription("copy and organize all files according to their time stamp")
             .setCommandFormat("organize /path/to/source /path/to/destination");
@@ -56,7 +57,7 @@ public class Configuration {
             .setOptionFormat("--fileExtensions=[jpg,jpeg,png,txt,...]");
 
     public Configuration() {
-        properties = FileTools.readProperties(PROPERTY_FILE_PATH_STRING);
+        properties = FileTools.readProperties(PROPERTY_FILE_NAME_STRING);
     }
 
     public Map<String, Command> allCommands() {

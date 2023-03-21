@@ -6,6 +6,7 @@
     <property name="jarfileName" value="organizer"/>
     <property name="build.dir" location="ant-bin"/>
     <property name="src.dir" location="src"/>
+    <property name="test.dir" location="test-bin"/>
 
     <target name="buildJar" depends="compile">
         <manifest file="MANIFEST.MF">
@@ -17,6 +18,10 @@
 
     <target name="clean">
         <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="cleanTest">
+        <delete dir="${test.dir}"/>
     </target>
 
     <target name="makedir">

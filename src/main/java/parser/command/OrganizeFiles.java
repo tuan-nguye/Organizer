@@ -3,7 +3,7 @@ package parser.command;
 import parser.CommandException;
 import parser.Configuration;
 
-public class CopyFiles extends Command {
+public class OrganizeFiles extends Command {
     @Override
     public void validateConfiguration(String[] args, Configuration config) throws CommandException {
         if(args.length != 2) {
@@ -14,7 +14,6 @@ public class CopyFiles extends Command {
 
     @Override
     public void executeCommand(String[] args, Configuration config) {
-        if(args.length != 2) throw new IllegalArgumentException("source or destination missing");
         System.out.println("source=" + args[0]);
         System.out.println("destination=" + args[1]);
     }

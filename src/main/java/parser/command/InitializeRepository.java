@@ -2,14 +2,10 @@ package parser.command;
 
 import parser.CommandException;
 import parser.Configuration;
-import parser.option.Option;
-import parser.option.ValueOption;
 import util.FileTools;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Map;
 import java.util.Properties;
 
 public class InitializeRepository extends Command {
@@ -21,7 +17,7 @@ public class InitializeRepository extends Command {
             throw new CommandException("too many arguments, needs 0 or 1");
         }
 
-        File propertiesFile = new File(Configuration.PROPERTY_FILE_PATH_STRING);
+        File propertiesFile = new File(Configuration.PROPERTY_FILE_PATH_STRING, Configuration.PROPERTY_FILE_NAME_STRING);
 
         if(propertiesFile.exists()) {
             throw new CommandException("repository already initialized");
@@ -35,8 +31,10 @@ public class InitializeRepository extends Command {
         if(args.length != 0) {
             folderSize = Integer.parseInt(args[0]);
         }
+
+        String fullPath = Configuration.PROPERTY_FILE_PATH_STRING + File.separator + Configuration.PROPERTY_FILE_NAME_STRING;
         System.out.println("initializing repo with size=" + folderSize + "... beep beep boop");
-        File propertiesFile = new File(Configuration.PROPERTY_FILE_PATH_STRING);
+        File propertiesFile = new File(fullPath);
 
         try {
             if(!propertiesFile.createNewFile()) {
@@ -48,6 +46,6 @@ public class InitializeRepository extends Command {
         }
 
         properties.put("folderSize", String.valueOf(folderSize));
-        FileTools.storeProperties(properties, Configuration.PROPERTY_FILE_PATH_STRING);
+        FileTools.storeProperties(properties, fullPath);
     }
 }

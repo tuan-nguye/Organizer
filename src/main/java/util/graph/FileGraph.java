@@ -22,7 +22,7 @@ public class FileGraph {
     FileNode root;
 
     public FileGraph(String rootStr) {
-        if(!validRoot(rootStr)) throw new IllegalArgumentException("not a valid destination root");
+        if(!validRoot(rootStr)) throw new IllegalArgumentException(rootStr + " is not a valid destination root");
         root = new FileNode(rootStr);
         update(root);
     }
@@ -30,7 +30,7 @@ public class FileGraph {
     public boolean validRoot(String rootStr) {
         File root = new File(rootStr);
         if(!root.isDirectory()) return false;
-        File configFile = new File(root, Configuration.PROPERTY_FILE_PATH_STRING);
+        File configFile = new File(rootStr, Configuration.PROPERTY_FILE_NAME_STRING);
         if(!configFile.exists()) return false;
         return true;
     }
@@ -58,7 +58,7 @@ public class FileGraph {
     }
 
     private void printFileStructure(FileNode node, int depth) {
-        System.out.println("\t".repeat(depth) + node.path.substring(node.path.lastIndexOf("/")) + ", files: " + node.fileCount);
+        System.out.println("\t".repeat(depth) + node.path.substring(node.path.lastIndexOf(File.separator)) + ", files: " + node.fileCount);
         for(FileNode child : node.children.values()) {
             printFileStructure(child, depth+1);
         }

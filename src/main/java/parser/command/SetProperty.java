@@ -14,7 +14,7 @@ public class SetProperty extends Command {
             throw new CommandException("property arguments missing");
         }
 
-        File propertyFile = new File(Configuration.PROPERTY_FILE_PATH_STRING);
+        File propertyFile = new File(Configuration.PROPERTY_FILE_NAME_STRING);
         if(!propertyFile.exists()) {
             throw new CommandException("can't set property, repository not initialized");
         }
@@ -43,6 +43,6 @@ public class SetProperty extends Command {
             properties.put(name, value);
         }
 
-        FileTools.storeProperties(properties, Configuration.PROPERTY_FILE_PATH_STRING);
+        FileTools.storeProperties(properties, Configuration.PROPERTY_FILE_NAME_STRING);
     }
 }
