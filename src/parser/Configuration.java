@@ -17,7 +17,7 @@ public class Configuration {
     Set<String> modifiableProperties = new HashSet<>();
 
     /* available commands */
-    Command organizeCommand = new CopyFiles()
+    Command organizeCommand = new OrganizeFiles()
             .setName("organize")
             .setDescription("copy and organize all files according to their time stamp")
             .setCommandFormat("organize /path/to/source /path/to/destination");
