@@ -12,10 +12,18 @@ public class FileGraph {
     public static class FileNode {
         public String path;
         public int fileCount = 0;
+        public int depth;
+        public boolean leaf = true;
         public Map<String, FileNode> children = new HashMap<>();
 
-        public FileNode(String path) {
+        public FileNode(String path, int depth) {
             this.path = path;
+            this.depth = depth;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s, files: %d, leaf: %b", path, fileCount, leaf);
         }
     }
 
@@ -23,7 +31,7 @@ public class FileGraph {
 
     public FileGraph(String rootStr) {
         if(!validRoot(rootStr)) throw new IllegalArgumentException(rootStr + " is not a valid destination root");
-        root = new FileNode(rootStr);
+        root = new FileNode(rootStr, 0);
         update(root);
     }
 
@@ -41,16 +49,19 @@ public class FileGraph {
         int fileCount = 0;
 
         for(File child : file.listFiles()) {
-            if(child.isFile()) fileCount++;
-            else {
+            if(child.isFile()) {
+                if(child.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
+                fileCount++;
+            } else {
                 String nextStr = child.getAbsolutePath();
-                if(!node.children.containsKey(nextStr)) node.children.put(nextStr, new FileNode(nextStr));
+                if(!node.children.containsKey(nextStr)) node.children.put(nextStr, new FileNode(nextStr, node.depth+1));
                 FileNode nextNode = node.children.get(nextStr);
                 update(nextNode);
             }
         }
 
         node.fileCount = fileCount;
+        node.leaf = fileCount != 0;
     }
 
     public void printFileStructure() {
@@ -58,7 +69,7 @@ public class FileGraph {
     }
 
     private void printFileStructure(FileNode node, int depth) {
-        System.out.println("\t".repeat(depth) + node.path.substring(node.path.lastIndexOf(File.separator)) + ", files: " + node.fileCount);
+        System.out.println("\t".repeat(depth) + node);
         for(FileNode child : node.children.values()) {
             printFileStructure(child, depth+1);
         }
@@ -72,16 +83,25 @@ public class FileGraph {
         DateIterator it = new DateIterator(dateTime);
         FileNode node = root;
         StringBuilder path = new StringBuilder(root.path);
+        StringBuilder folderName = new StringBuilder();
         boolean first = true;
 
         while(it.hasNext()) {
-            if(!node.children.containsKey(path.toString())) break;
             if(first) first = false;
-            else path.append("_");
-            path.append(it.next());
+            else folderName.append("_");
+            folderName.append(it.next());
+            path.append(File.separator).append(folderName);
+            if(!node.children.containsKey(path.toString())) {
+                if(!node.leaf) {
+                    FileNode next = new FileNode(path.toString(), node.depth+1);
+                    node.children.put(next.path, next);
+                    node = next;
+                }
+                break;
+            }
             node = node.children.get(path.toString());
         }
 
-        return null;
+        return node;
     }
 }

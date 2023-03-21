@@ -10,12 +10,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public abstract class Organizer implements observer.Subject<Integer> {
     private List<Observer> obs = new ArrayList<>();
-    protected int count;
+    protected int count = 0;
     protected StringBuilder errors = new StringBuilder();
     protected ICopy operation;
 
@@ -23,24 +22,11 @@ public abstract class Organizer implements observer.Subject<Integer> {
         this.operation = operation;
     }
 
-    public abstract String organize(String source, String destination);
+    public abstract String copyAndOrganize(String source, String destination);
 
-    protected boolean copyFile(File f) {
-        Instant instant = Instant.ofEpochMilli(f.lastModified());
-        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-        Path path = getDirectory(dateTime);
-        if(path == null) return false;
-
-        try {
-            operation.copy(f.toPath(), path.resolve(f.getName()));
-        } catch(IOException ioe) {
-            errors.append("copy file error: ").append(ioe.getMessage()).append("\n");
-            return false;
-        }
-
-        return true;
+    public void incrementCounter() {
+        count++;
     }
-    protected abstract Path getDirectory(LocalDateTime dateTime);
 
     public int getCount() {
         return this.count;
