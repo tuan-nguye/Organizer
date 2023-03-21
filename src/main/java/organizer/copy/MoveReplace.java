@@ -8,7 +8,7 @@ import java.nio.file.StandardCopyOption;
 
 public class MoveReplace implements ICopy {
     @Override
-    public void copy(Path from, Path to) throws FileNotFoundException, IOException {
-        Files.move(from, to, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+    public void copy(Path from, Path to) throws IOException {
+        Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
     }
 }
