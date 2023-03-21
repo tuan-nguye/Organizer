@@ -1,5 +1,8 @@
 package util.graph;
 
+import parser.Configuration;
+import util.time.DateIterator;
+
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -25,6 +28,10 @@ public class FileGraph {
     }
 
     public boolean validRoot(String rootStr) {
+        File root = new File(rootStr);
+        if(!root.isDirectory()) return false;
+        File configFile = new File(root, Configuration.PROPERTY_FILE_PATH_STRING);
+        if(!configFile.exists()) return false;
         return true;
     }
 
@@ -62,6 +69,19 @@ public class FileGraph {
     }
 
     public FileNode getNode(LocalDateTime dateTime) {
+        DateIterator it = new DateIterator(dateTime);
+        FileNode node = root;
+        StringBuilder path = new StringBuilder(root.path);
+        boolean first = true;
+
+        while(it.hasNext()) {
+            if(!node.children.containsKey(path.toString())) break;
+            if(first) first = false;
+            else path.append("_");
+            path.append(it.next());
+            node = node.children.get(path.toString());
+        }
+
         return null;
     }
 }

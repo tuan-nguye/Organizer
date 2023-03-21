@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class InitializeRepository extends Command {
-    public static final int DEFAULT_FOLDER_SIZE = 500;
+    public static final int DEFAULT_FOLDER_SIZE = 1000;
 
     @Override
     public void validateConfiguration(String[] args, Configuration config) throws CommandException {
