@@ -15,14 +15,13 @@ import java.util.List;
 public abstract class Organizer implements observer.Subject<Integer> {
     private List<Observer> obs = new ArrayList<>();
     protected int count = 0;
-    protected StringBuilder errors = new StringBuilder();
     protected ICopy operation;
 
     public Organizer(ICopy operation) {
         this.operation = operation;
     }
 
-    public abstract String copyAndOrganize(String source, String destination);
+    public abstract void copyAndOrganize(String source, String destination);
 
     public void incrementCounter() {
         count++;

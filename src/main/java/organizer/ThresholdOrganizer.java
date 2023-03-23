@@ -23,16 +23,14 @@ public class ThresholdOrganizer extends Organizer {
     }
 
     @Override
-    public String copyAndOrganize(String source, String destination) {
+    public void copyAndOrganize(String source, String destination) {
         fileGraph = new FileGraph(destination);
         dfs(new File(source));
-        return errors.toString();
     }
 
     private void dfs(File file) {
         if(file.isFile()) {
             copyFile(file);
-            //fileGraph.printFileStructure();
             incrementCounter();
             notifyObservers();
             return;
@@ -51,7 +49,7 @@ public class ThresholdOrganizer extends Organizer {
         try {
             operation.copy(f.toPath(), path.resolve(f.getName()));
         } catch(IOException ioe) {
-            errors.append("warning: ").append(ioe.getMessage()).append("\n");
+            System.out.println("warning: " + ioe.getMessage());
             return false;
         }
 
