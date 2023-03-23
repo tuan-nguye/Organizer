@@ -20,7 +20,7 @@ public class PrintStatus extends Command {
         File propertyFile = new File(Configuration.PROPERTY_FILE_NAME_STRING);
 
         if(!propertyFile.exists()) {
-            System.out.println("not a organizer repository");
+            System.out.println("not an organizer repository");
             return;
         } else {
             System.out.println("organizer repository initialized\n");

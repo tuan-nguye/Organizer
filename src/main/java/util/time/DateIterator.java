@@ -12,7 +12,7 @@ public class DateIterator implements Iterator<String> {
 
     public DateIterator(LocalDateTime dateTime) {
         time.add(String.valueOf(dateTime.getYear()));
-        time.add(months[dateTime.getMonthValue()]);
+        time.add(months[dateTime.getMonthValue()-1]);
         time.add(String.valueOf(dateTime.getDayOfMonth()));
         time.add(dateTime.getHour()+"h");
         time.add(dateTime.getMinute()+"min");

@@ -32,7 +32,8 @@ public class InitializeRepository extends Command {
             folderSize = Integer.parseInt(args[0]);
         }
 
-        String fullPath = Configuration.PROPERTY_FILE_PATH_STRING + File.separator + Configuration.PROPERTY_FILE_NAME_STRING;
+        String fullPath = Configuration.PROPERTY_FILE_NAME_STRING;
+        if(!Configuration.PROPERTY_FILE_PATH_STRING.isEmpty()) fullPath = Configuration.PROPERTY_FILE_PATH_STRING + File.separator + fullPath;
         System.out.println("initializing repo with size=" + folderSize + "... beep beep boop");
         File propertiesFile = new File(fullPath);
 

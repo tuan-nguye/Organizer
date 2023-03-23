@@ -32,7 +32,7 @@ public class ThresholdOrganizer extends Organizer {
     private void dfs(File file) {
         if(file.isFile()) {
             copyFile(file);
-            fileGraph.printFileStructure();
+            //fileGraph.printFileStructure();
             incrementCounter();
             notifyObservers();
             return;
@@ -68,22 +68,16 @@ public class ThresholdOrganizer extends Organizer {
 
     private void reorganize(FileGraph.FileNode node) {
         if(node.fileCount <= threshold) return;
-
+        node.leaf = false;
         File directory = new File(node.path);
-        String folder = node.depth > 0 ? node.path.substring(node.path.lastIndexOf(File.separator)+1) : "";
 
         for(File file : directory.listFiles(a -> a.isFile())) {
             if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
-            DateIterator it = new DateIterator(FileTools.dateTime(file.lastModified()));
-
-            for(int i = 0; i < node.depth; i++) it.next();
-
-            String nextFolder = folder.isEmpty() ? it.next() : folder + '_' + it.next();
-            File nextDirFile = new File(node.path, nextFolder);
-            if(!nextDirFile.exists()) nextDirFile.mkdir();
+            FileGraph.FileNode nextNode = getDirectory(FileTools.dateTime(file.lastModified()));
+            Path path = Path.of(nextNode.path);
 
             try {
-                move.copy(file.toPath(), nextDirFile.toPath().resolve(file.getName()));
+                move.copy(file.toPath(), path.resolve(file.getName()));
             } catch(IOException ioe) {
                 System.err.println("error reorganizing " + file.getName());
                 ioe.printStackTrace();

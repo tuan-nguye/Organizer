@@ -48,7 +48,10 @@ public class Configuration {
             .setName("skip")
             .setDescription("skip files that already exist instead of replacing them");
 
-    //Option cutOption = new FlagOption(); // cut instead of copy, kinda dangerous
+    Option moveOption = new FlagOption()
+            .setName("move")
+            .setDescription("move files instead of copying them");
+
     Option fileExtensionsOption = new ValueOption()
             .allowAllValues(true)
             .acceptMultipleValues(true)
@@ -74,6 +77,7 @@ public class Configuration {
     public Map<String, Option> allOptions() {
         Map<String, Option> allOptions = new HashMap<>();
         allOptions.put(skipOption.getName(), skipOption);
+        allOptions.put(moveOption.getName(), moveOption);
         allOptions.put(fileExtensionsOption.getName(), fileExtensionsOption);
         return allOptions;
     }
