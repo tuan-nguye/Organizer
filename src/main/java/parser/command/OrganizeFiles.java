@@ -6,6 +6,7 @@ import organizer.copy.*;
 import parser.CommandException;
 import parser.Configuration;
 import parser.option.Option;
+import util.Checker;
 import util.FileTools;
 import view.ProgressBar;
 
@@ -19,6 +20,9 @@ public class OrganizeFiles extends Command {
             throw new CommandException("invalid number of arguments, needs 2");
         } // check if source and destination exist, destination is valid repo
 
+        if(!Checker.validRepository(Configuration.PROPERTY_FILE_PATH_STRING)) {
+            throw new CommandException(Configuration.PROPERTY_FILE_PATH_STRING + " is not a repository");
+        }
     }
 
     @Override

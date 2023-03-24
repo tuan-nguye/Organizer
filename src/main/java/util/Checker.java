@@ -1,14 +1,23 @@
 package util;
 
+import parser.Configuration;
+
+import java.io.File;
+
 /*
 refactor pre-/postcondition checks
  */
 public class Checker {
-    public void checkNotNull(Object o) {
+    public static void checkNotNull(Object o) {
         if(o == null) throw new IllegalArgumentException("object " + o + "is null");
     }
 
-    public void checkStringNotEmpty(String str) {
+    public static void checkStringNotEmpty(String str) {
         if(str.isEmpty()) throw new IllegalArgumentException("string can't be empty");
+    }
+
+    public static boolean validRepository(String path) {
+        File repo = new File(path, Configuration.PROPERTY_FILE_NAME_STRING);
+        return repo.exists();
     }
 }

@@ -7,7 +7,7 @@ import java.nio.file.StandardCopyOption;
 
 public class Copy implements ICopy {
     @Override
-    public void copy(Path from, Path to) throws IOException {
+    public void execute(Path from, Path to) throws IOException {
         Files.copy(from, to, StandardCopyOption.COPY_ATTRIBUTES);
     }
 }

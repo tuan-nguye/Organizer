@@ -4,6 +4,7 @@ import parser.Configuration;
 import util.time.DateIterator;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,17 +31,8 @@ public class FileGraph {
     FileNode root;
 
     public FileGraph(String rootStr) {
-        if(!validRoot(rootStr)) throw new IllegalArgumentException(rootStr + " is not a valid destination root");
-        root = new FileNode(rootStr, 0);
+        root = new FileNode(Path.of(rootStr).toAbsolutePath().toString(), 0);
         update(root);
-    }
-
-    public boolean validRoot(String rootStr) {
-        File root = new File(rootStr);
-        if(!root.isDirectory()) return false;
-        File configFile = new File(rootStr, Configuration.PROPERTY_FILE_NAME_STRING);
-        if(!configFile.exists()) return false;
-        return true;
     }
 
     public void update(FileNode node) {

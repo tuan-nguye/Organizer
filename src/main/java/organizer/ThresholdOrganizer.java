@@ -5,7 +5,6 @@ import organizer.copy.Move;
 import parser.Configuration;
 import util.FileTools;
 import util.graph.FileGraph;
-import util.time.DateIterator;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +46,7 @@ public class ThresholdOrganizer extends Organizer {
         if(path == null) return false;
 
         try {
-            operation.copy(f.toPath(), path.resolve(f.getName()));
+            operation.execute(f.toPath(), path.resolve(f.getName()));
         } catch(IOException ioe) {
             System.out.println("warning: " + ioe.getMessage());
             return false;
@@ -75,7 +74,7 @@ public class ThresholdOrganizer extends Organizer {
             Path path = Path.of(nextNode.path);
 
             try {
-                move.copy(file.toPath(), path.resolve(file.getName()));
+                move.execute(file.toPath(), path.resolve(file.getName()));
             } catch(IOException ioe) {
                 System.err.println("error reorganizing " + file.getName());
                 ioe.printStackTrace();

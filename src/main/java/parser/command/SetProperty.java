@@ -2,6 +2,7 @@ package parser.command;
 
 import parser.CommandException;
 import parser.Configuration;
+import util.Checker;
 import util.FileTools;
 
 import java.io.File;
@@ -14,8 +15,7 @@ public class SetProperty extends Command {
             throw new CommandException("property arguments missing");
         }
 
-        File propertyFile = new File(Configuration.PROPERTY_FILE_NAME_STRING);
-        if(!propertyFile.exists()) {
+        if(!Checker.validRepository(Configuration.PROPERTY_FILE_PATH_STRING)) {
             throw new CommandException("can't set property, repository not initialized");
         }
 

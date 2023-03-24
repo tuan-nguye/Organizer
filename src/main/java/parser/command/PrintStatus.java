@@ -2,6 +2,7 @@ package parser.command;
 
 import parser.CommandException;
 import parser.Configuration;
+import util.Checker;
 
 import java.io.File;
 import java.util.Map;
@@ -17,9 +18,7 @@ public class PrintStatus extends Command {
 
     @Override
     public void executeCommand(String[] args, Configuration config) {
-        File propertyFile = new File(Configuration.PROPERTY_FILE_NAME_STRING);
-
-        if(!propertyFile.exists()) {
+        if(!Checker.validRepository(Configuration.PROPERTY_FILE_PATH_STRING)) {
             System.out.println("not an organizer repository");
             return;
         } else {
