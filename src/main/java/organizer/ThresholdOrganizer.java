@@ -29,10 +29,10 @@ public class ThresholdOrganizer extends Organizer {
 
     private void dfs(File file) {
         if(file.isFile()) {
+            if(!allowExtension(FileTools.getFileExtension(file))) return;
             copyFile(file);
             incrementCounter();
             notifyObservers();
-            return;
         } else {
             for(File child : file.listFiles()) {
                 dfs(child);
@@ -48,7 +48,7 @@ public class ThresholdOrganizer extends Organizer {
         try {
             operation.execute(f.toPath(), path.resolve(f.getName()));
         } catch(IOException ioe) {
-            System.out.println("warning: " + ioe.getMessage());
+            System.out.println("warning: " + ioe + ioe.getMessage());
             return false;
         }
 

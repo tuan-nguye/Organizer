@@ -3,19 +3,17 @@ package organizer;
 import observer.Observer;
 import organizer.copy.ICopy;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public abstract class Organizer implements observer.Subject<Integer> {
     private List<Observer> obs = new ArrayList<>();
-    protected int count = 0;
+    private int count = 0;
     protected ICopy operation;
+
+    private Set<String> allowedFileExtensions = null;
 
     public Organizer(ICopy operation) {
         this.operation = operation;
@@ -25,6 +23,16 @@ public abstract class Organizer implements observer.Subject<Integer> {
 
     public void incrementCounter() {
         count++;
+    }
+
+    public void addFileExtension(String ext) {
+        if(allowedFileExtensions == null) allowedFileExtensions = new HashSet<>();
+        allowedFileExtensions.add(ext);
+    }
+
+    public boolean allowExtension(String ext) {
+        if(allowedFileExtensions == null) return true;
+        else return allowedFileExtensions.contains(ext);
     }
 
     public int getCount() {

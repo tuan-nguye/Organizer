@@ -26,6 +26,8 @@ public class ThresholdOrganizerTest {
      */
     private static final long[] exampleFileTimes = new long[] {1679387110238l, 1675387890214l, 1279387493013l, 1679087583401l, 1629387123456l};
 
+    private static ThresholdOrganizer organizer;
+
     @BeforeAll
     public static void prepare() {
         File testOut = new File(repoPath);
@@ -39,7 +41,7 @@ public class ThresholdOrganizerTest {
             System.err.println(ce.getMessage());
         }
 
-        File testIn = new File(testFilesPath);
+        File testIn = new File(testFilesPath, "txt");
         if(!testIn.exists()) testIn.mkdirs();
 
         for(int i = 0; i < exampleFileTimes.length; i++) {
@@ -51,12 +53,24 @@ public class ThresholdOrganizerTest {
             }
             exampleFile.setLastModified(exampleFileTimes[i]);
         }
+
+        File csvDir = new File(testFilesPath, "csv");
+        csvDir.mkdir();
+        File csv = new File(csvDir, "testCsv.csv");
+        try {
+            csv.createNewFile();
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
+        }
+
+        organizer = new ThresholdOrganizer(new Copy(), 1);
+        organizer.allowExtension("txt");
     }
 
     @Test
     public void test() {
-        Organizer organizer = new ThresholdOrganizer(new Copy(), 1);
-        organizer.copyAndOrganize(testFilesPath, repoPath);
+        organizer.copyAndOrganize(testFilesPath+File.separator+"txt", repoPath);
+
         String[] files = new String[] {
                 "test-bin/repo/2010/test2.txt",
                 "test-bin/repo/2021/test4.txt",
@@ -70,6 +84,13 @@ public class ThresholdOrganizerTest {
             assertTrue(file.exists());
         }
 
-        assertEquals(FileTools.count(new File(repoPath)), files.length+1);
+        assertEquals(files.length+1, FileTools.count(new File(repoPath)));
+    }
+
+    @Test
+    public void addUnallowedFileExtension() {
+        organizer.addFileExtension("txt");
+        organizer.copyAndOrganize(testFilesPath+File.separator+"csv", repoPath);
+        assertEquals(0, FileTools.count(new File(repoPath), (dir, name) -> name.contains("csv")));
     }
 }

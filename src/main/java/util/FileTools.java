@@ -13,11 +13,15 @@ import java.util.Properties;
 
 public class FileTools {
     public static int count(File file) {
+        return count(file, null);
+    }
+
+    public static int count(File file, FilenameFilter filter) {
         if(file == null) return 0;
         else if(file.isFile()) return 1;
 
         int count = 0;
-        for(File child : file.listFiles()) {
+        for(File child : file.listFiles(filter)) {
             count += count(child);
         }
 
@@ -25,11 +29,15 @@ public class FileTools {
     }
 
     public static int countDirectFiles(File file) {
+        return countDirectFiles(file, null);
+    }
+
+    public static int countDirectFiles(File file, FilenameFilter filter) {
         if(file == null) return 0;
         else if(!file.isDirectory()) return 1;
 
         int count = 0;
-        for(File f : file.listFiles()) {
+        for(File f : file.listFiles(filter)) {
             if(f.isFile()) count++;
         }
 
@@ -37,11 +45,15 @@ public class FileTools {
     }
 
     public static long size(File file) {
+        return size(file, null);
+    }
+
+    public static long size(File file, FilenameFilter filter) {
         if(file == null) return 0;
         else if(file.isFile()) return file.length();
 
         long sum = 0;
-        for(File child : file.listFiles()) {
+        for(File child : file.listFiles(filter)) {
             sum += size(child);
         }
 
@@ -160,5 +172,14 @@ public class FileTools {
         Instant instant = Instant.ofEpochMilli(lastModified);
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         return dateTime;
+    }
+
+    public static String getFileExtension(File file) {
+        String fileName = file.getName();
+        return fileName.substring(fileName.lastIndexOf('.')+1);
+    }
+
+    public static String getFileExtension(String fileName) {
+        return fileName.substring(fileName.lastIndexOf('.')+1);
     }
 }
