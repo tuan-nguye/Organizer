@@ -2,10 +2,9 @@ package parser.command;
 
 import parser.CommandException;
 import parser.Configuration;
-import util.Checker;
+import util.consistency.Checker;
 import util.FileTools;
 
-import java.io.File;
 import java.util.Properties;
 
 public class SetProperty extends Command {

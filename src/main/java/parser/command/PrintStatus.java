@@ -2,9 +2,8 @@ package parser.command;
 
 import parser.CommandException;
 import parser.Configuration;
-import util.Checker;
+import util.consistency.Checker;
 
-import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 

@@ -2,7 +2,7 @@ package parser.command;
 
 import parser.CommandException;
 import parser.Configuration;
-import util.Checker;
+import util.consistency.Checker;
 
 import java.io.File;
 

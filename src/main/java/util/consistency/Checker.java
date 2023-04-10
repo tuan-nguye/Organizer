@@ -1,4 +1,4 @@
-package util;
+package util.consistency;
 
 import parser.Configuration;
 

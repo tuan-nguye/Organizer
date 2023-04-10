@@ -48,7 +48,7 @@ public class ThresholdOrganizer extends Organizer {
         try {
             operation.execute(f.toPath(), path.resolve(f.getName()));
         } catch(IOException ioe) {
-            System.out.println("warning: " + ioe + ioe.getMessage());
+            System.out.println("warning: " + ioe + "" + ioe.getMessage());
             return false;
         }
 

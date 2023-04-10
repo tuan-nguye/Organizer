@@ -4,6 +4,7 @@ import parser.command.*;
 import parser.option.*;
 import util.FileTools;
 
+import java.io.File;
 import java.util.*;
 
 public class Configuration {
@@ -11,7 +12,6 @@ public class Configuration {
     public static String PROPERTY_FILE_NAME_STRING = ".organizer_config.txt";
     public static String PROPERTY_FILE_PATH_STRING = "";
 
-    private Properties properties;
 
     Set<String> propertyNames = new HashSet<>(Arrays.asList("folderSize"));
 
@@ -64,7 +64,6 @@ public class Configuration {
             .setOptionFormat("--fileExtensions=[jpg,jpeg,png,txt,...]");
 
     public Configuration() {
-        properties = FileTools.readProperties(PROPERTY_FILE_NAME_STRING);
     }
 
     public Map<String, Command> allCommands() {
@@ -88,7 +87,7 @@ public class Configuration {
     }
 
     public Properties getProperties() {
-        return (Properties) properties.clone();
+        return FileTools.readProperties(PROPERTY_FILE_PATH_STRING+ File.separator+PROPERTY_FILE_NAME_STRING);
     }
 
     public Set<String> getPropertyNames() {

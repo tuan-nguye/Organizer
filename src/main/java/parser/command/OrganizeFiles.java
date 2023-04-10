@@ -7,7 +7,7 @@ import parser.CommandException;
 import parser.Configuration;
 import parser.option.Option;
 import parser.option.ValueOption;
-import util.Checker;
+import util.consistency.Checker;
 import util.FileTools;
 import view.ProgressBar;
 
