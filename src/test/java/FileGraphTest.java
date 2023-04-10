@@ -53,9 +53,9 @@ public class FileGraphTest {
         }
     }
 
-    public void allNodePaths(FileGraph.FileNode node, List<String> paths) {
+    public void allNodePaths(FileGraph.Node node, List<String> paths) {
         paths.add(node.path);
-        for(FileGraph.FileNode next : node.children.values()) allNodePaths(next, paths);
+        for(FileGraph.Node next : node.children.values()) allNodePaths(next, paths);
     }
 
     @Test
@@ -63,26 +63,26 @@ public class FileGraphTest {
         correctLeaf(fileGraph.getRoot());
     }
 
-    public void correctLeaf(FileGraph.FileNode node) {
+    public void correctLeaf(FileGraph.Node node) {
         assertEquals(node.children.isEmpty(), node.leaf);
-        for(FileGraph.FileNode next : node.children.values()) correctLeaf(next);
+        for(FileGraph.Node next : node.children.values()) correctLeaf(next);
     }
 
     @Test
     public void getNodeTest() {
         // 12/11/2021 20:50
         LocalDateTime dateTime0 = LocalDateTime.of(2021, 12, 12, 20, 50);
-        FileGraph.FileNode node_12_11_2021 = fileGraph.getNode(dateTime0);
+        FileGraph.Node node_12_11_2021 = fileGraph.getNode(dateTime0);
         assertEquals(absoluteExamplePaths[4], node_12_11_2021.path);
 
         // 20/02/2021 19:25
         LocalDateTime dateTime1 = LocalDateTime.of(2021, 2, 20, 19, 25);
-        FileGraph.FileNode node_02_2021 = fileGraph.getNode(dateTime1);
+        FileGraph.Node node_02_2021 = fileGraph.getNode(dateTime1);
         assertEquals(absoluteExamplePaths[0] + File.separator + "2021_feb", node_02_2021.path);
 
         // 05/07/2020 16:34
         LocalDateTime dateTime2 = LocalDateTime.of(2020, 7, 5, 16, 34);
-        FileGraph.FileNode node_2020 = fileGraph.getNode(dateTime2);
+        FileGraph.Node node_2020 = fileGraph.getNode(dateTime2);
         assertEquals(Path.of(root).toAbsolutePath() + File.separator + "2020", node_2020.path);
     }
 }
