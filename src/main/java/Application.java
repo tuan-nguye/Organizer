@@ -12,29 +12,8 @@ import java.util.Map;
 
 public class Application {
     public static void main(String[] args) {
-        /*
-        File source = new File(args[0]);
-        int fileCount = FileTools.count(source);
-        long size = FileTools.size(source);
-        System.out.printf("file count: %d, size: %f\n", fileCount, size/1e6);
-        FileTools.clearToTrashbin(new File(args[1]));
-
-        ProgressBar bar = new ProgressBar(20, fileCount);
-        Organizer org = new ThresholdOrganizer(5);
-
-        bar.setSubject(org);
-        org.register(bar);
-
-        try {
-            String errors = org.copyAndOrganize(args[0], args[1]);
-            System.out.println(errors);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
-        }
-        */
-
         Configuration configuration = new Configuration();
+        Configuration.PROPERTY_FILE_PATH_STRING = System.getProperty("user.dir");
         Map<String, Command> commandMap = configuration.allCommands();
 
         CommandLineParser parser = new CommandLineParser();

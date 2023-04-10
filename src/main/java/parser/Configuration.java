@@ -43,6 +43,10 @@ public class Configuration {
             .setDescription("set and store property, currently available properties: folderSize=N: set folder size threshold")
             .setCommandFormat("setProperty [property=value]");
 
+    Command deleteRepository = new DeleteRepository()
+            .setName("delete")
+            .setDescription("delete repo in current working directory if it exists");
+
     /* available options */
     Option skipOption = new FlagOption()
             .setName("skip")
@@ -71,6 +75,7 @@ public class Configuration {
         allCommands.put(helpCommand.getName(), helpCommand);
         allCommands.put(versionCommand.getName(), versionCommand);
         allCommands.put(setPropertyCommand.getName(), setPropertyCommand);
+        allCommands.put(deleteRepository.getName(), deleteRepository);
         return allCommands;
     }
 

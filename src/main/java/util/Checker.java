@@ -17,7 +17,9 @@ public class Checker {
     }
 
     public static boolean validRepository(String path) {
-        File repo = new File(path, Configuration.PROPERTY_FILE_NAME_STRING);
+        File repo;
+        if(path.isEmpty()) repo = new File(Configuration.PROPERTY_FILE_NAME_STRING);
+        else repo = new File(path, Configuration.PROPERTY_FILE_NAME_STRING);
         return repo.exists();
     }
 }
