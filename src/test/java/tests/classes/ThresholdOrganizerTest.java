@@ -1,3 +1,5 @@
+package tests.classes;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import organizer.Organizer;
@@ -8,6 +10,7 @@ import parser.Configuration;
 import parser.command.Command;
 import parser.command.InitializeRepository;
 import resources.GenerateExampleFiles;
+import resources.InitializeTestRepository;
 import util.FileTools;
 
 import java.io.File;
@@ -24,26 +27,15 @@ public class ThresholdOrganizerTest {
 
     @BeforeAll
     public static void prepare() {
-        File testOut = new File(repoPath);
-        if(!testOut.exists()) testOut.mkdirs();
-        Configuration.PROPERTY_FILE_PATH_STRING = repoPath;
-        Command initRepo = new InitializeRepository();
         Configuration conf = new Configuration();
-
-        try {
-            initRepo.execute(new String[] {"1"}, conf);
-        } catch(CommandException ce) {
-            System.err.println(ce.getMessage());
-        }
-
-        GenerateExampleFiles.generate();
+        InitializeTestRepository.generateRepository(repoPath, conf);
 
         organizer = new ThresholdOrganizer(new Copy(), 1);
         organizer.allowExtension("txt");
     }
 
     @Test
-    public void test() {
+    public void testCopyAndOrganize() {
         organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath+File.separator+"txt", repoPath);
 
         String[] files = new String[] {

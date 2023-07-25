@@ -1,3 +1,5 @@
+package tests.classes;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import organizer.Organizer;
@@ -8,6 +10,7 @@ import parser.Configuration;
 import parser.command.Command;
 import parser.command.InitializeRepository;
 import resources.GenerateExampleFiles;
+import resources.InitializeTestRepository;
 import util.consistency.ModelChecker;
 import util.graph.FileGraph;
 
@@ -16,7 +19,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,19 +41,8 @@ public class ModelCheckerTest {
 
     @BeforeAll
     public static void prepare() {
-        File testOut = new File(repoPath);
-        if(!testOut.exists()) testOut.mkdirs();
-        Configuration.PROPERTY_FILE_PATH_STRING = repoPath;
-        Command initRepo = new InitializeRepository();
         config = new Configuration();
-
-        try {
-            initRepo.execute(new String[] {"1"}, config);
-        } catch(CommandException ce) {
-            System.err.println(ce.getMessage());
-        }
-
-        GenerateExampleFiles.generate();
+        InitializeTestRepository.generateRepository(repoPath, config);
 
         Organizer organizer = new ThresholdOrganizer(new Copy(), 1);
         organizer.allowExtension("txt");
@@ -153,5 +147,32 @@ public class ModelCheckerTest {
                 stack.push(children);
             }
         }
+    }
+
+    @Test
+    public void testValidFolderStructure() {
+        testValidFolderStructureRec(graph.getRoot(), new ArrayList<>());
+    }
+
+    private void testValidFolderStructureRec(FileGraph.Node node, List<String> folders) {
+        String folderName = node.path.equals(graph.getRoot().path) ? "" : node.path.substring(node.path.lastIndexOf(File.separator)+1);
+        folders.add(folderName);
+
+        if(!node.leaf) {
+            for(FileGraph.Node next : node.children.values()) {
+                testValidFolderStructureRec(next, folders);
+            }
+        } else {
+            System.out.println(folders);
+            assertTrue(checker.validFolderStructure(folders));
+        }
+
+        folders.remove(folders.size()-1);
+    }
+
+    @Test
+    public void testValidFolderStructureFalse() {
+        List<String> folders = List.of("", "2010", "2010_asdf");
+        assertFalse(checker.validFolderStructure(folders));
     }
 }

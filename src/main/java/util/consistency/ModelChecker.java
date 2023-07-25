@@ -66,20 +66,25 @@ public class ModelChecker {
 
         for(int i = 0; i < folderSplit.length; i++) {
             String folderSplitTime = folderSplit[i];
+            if(!validRange(i+1, folderSplitTime));
+        }
 
-            if(!DateStats.unit[i].isEmpty()) {
-                if(!folderSplitTime.endsWith(DateStats.unit[i])) return false;
-                folderSplitTime = folderSplitTime.substring(0, folderSplitTime.length()-DateStats.unit[i].length());
-            }
+        return true;
+    }
 
-            if(i != 1) {
-                int num = Integer.parseInt(folderSplitTime);
-                if(num < DateStats.dateRange[i][0] || num > DateStats.dateRange[i][1])
-                    return false;
-            } else {
-                if(!DateStats.monthInt.containsKey(folderSplitTime)) return false;
-            }
+    private boolean validRange(int depth, String time) {
+        if(depth == 0) return time.isEmpty();
 
+        if(!DateStats.unit[depth].isEmpty()) {
+            if(!time.endsWith(DateStats.unit[depth-1])) return false;
+            time = time.substring(0, time.length()-DateStats.unit[depth].length());
+        }
+        if(depth != 2) {
+            int num = Integer.parseInt(time);
+            if(num < DateStats.dateRange[depth-1][0] || num > DateStats.dateRange[depth-1][1])
+                return false;
+        } else {
+            if(!DateStats.monthInt.containsKey(time)) return false;
         }
 
         return true;
@@ -90,6 +95,25 @@ public class ModelChecker {
     }
 
     public boolean validFolderStructure(List<String> folders) {
+        String folderPrefix = "";
+
+        for(int i = 0; i < folders.size(); i++) {
+            String folder = folders.get(i);
+            if(!folder.startsWith(folderPrefix)) return false;
+            else {
+                String time;
+                if(i <= 1) time = folder;
+                else {
+                    int idx = folder.lastIndexOf('_');
+                    if(idx == -1) return false;
+                    time = folder.substring(idx+1);
+                }
+                if(!validRange(i, time)) return false;
+            }
+
+            folderPrefix = folder;
+        }
+
         return true;
     }
 }

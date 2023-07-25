@@ -1,3 +1,5 @@
+package tests.classes;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import util.graph.FileGraph;
