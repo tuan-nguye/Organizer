@@ -11,6 +11,9 @@ import parser.command.Command;
 import parser.command.InitializeRepository;
 import resources.GenerateExampleFiles;
 import resources.InitializeTestRepository;
+import util.FileTools;
+import util.consistency.FileErrors;
+import util.consistency.FolderErrors;
 import util.consistency.ModelChecker;
 import util.graph.FileGraph;
 
@@ -18,10 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -140,7 +140,7 @@ public class ModelCheckerTest {
 
         while(!stack.isEmpty()) {
             FileGraph.Node node = stack.pop();
-            String folderName = node.path.equals(root.path) ? "" : node.path.substring(node.path.lastIndexOf(File.separator)+1);
+            String folderName = FileTools.getFolderNameWithoutPrefix(root.path, node.path);
             assertTrue(checker.validFolderName(folderName));
 
             for(FileGraph.Node children : node.children.values()) {
@@ -155,7 +155,7 @@ public class ModelCheckerTest {
     }
 
     private void testValidFolderStructureRec(FileGraph.Node node, List<String> folders) {
-        String folderName = node.path.equals(graph.getRoot().path) ? "" : node.path.substring(node.path.lastIndexOf(File.separator)+1);
+        String folderName = FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, node.path);
         folders.add(folderName);
 
         if(!node.leaf) {
@@ -174,5 +174,27 @@ public class ModelCheckerTest {
     public void testValidFolderStructureFalse() {
         List<String> folders = List.of("", "2010", "2010_asdf");
         assertFalse(checker.validFolderStructure(folders));
+    }
+
+    @Test
+    public void checkAllCorrect() {
+        checker.checkAll(true, true);
+        String out = "";
+        for(Map.Entry<FileErrors, List<String>> e : checker.getFileErrors().entrySet()) {
+            if(!e.getValue().isEmpty()) out += e + "\n";
+        }
+
+        for(Map.Entry<FolderErrors, List<String>> e : checker.getFolderErrors().entrySet()) {
+            if(!e.getValue().isEmpty()) out += e + "\n";
+        }
+
+        if(!out.isEmpty()) fail("errors detected even though everything is correct: \n" + out);
+    }
+
+    @Test
+    public void checkAllTestIncorrect() {
+        // TODO add invalid folders and files
+        // TODO checker should find all of them
+        // TODO and then remove them again
     }
 }

@@ -182,4 +182,9 @@ public class FileTools {
     public static String getFileExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf('.')+1);
     }
+
+    public static String getFolderNameWithoutPrefix(String prefix, String path) {
+        if(path == prefix) return "";
+        return path.substring(path.lastIndexOf(File.separator)+1);
+    }
 }

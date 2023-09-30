@@ -7,12 +7,18 @@ import util.time.DateIterator;
 import util.time.DateStats;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ModelChecker {
     private FileGraph graph;
     private Configuration config;
     private int threshold;
+    // saved errors after check
+    private Map<FileErrors, List<String>> invalidFiles = new HashMap<>();
+    private Map<FolderErrors, List<String>> invalidFolders = new HashMap<>();
 
     public ModelChecker(Configuration config) {
         this.graph = new FileGraph(Configuration.PROPERTY_FILE_PATH_STRING);
@@ -20,13 +26,57 @@ public class ModelChecker {
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
     }
 
+    // function that dfs through all files and folders and saves errors
+    // in a structure, which can be returned
+    public void checkAll(boolean chk_files, boolean chk_folders) {
+        if(!chk_files && !chk_folders) return;
+        invalidFiles.clear();
+        for(FileErrors fe : FileErrors.values()) invalidFiles.put(fe, new ArrayList<>());
+        invalidFolders.clear();
+        for(FolderErrors fe : FolderErrors.values()) invalidFolders.put(fe, new ArrayList<>());
+        checkAllDfs(graph.getRoot(), new ArrayList<>(), chk_files, chk_folders);
+    }
+
+    // recursive implementation of checkAll function
+    // works on filegraph nodes to avoid IO operations
+    private void checkAllDfs(FileGraph.Node node, List<String> path, boolean chk_files, boolean chk_folders) {
+        // add folder name to path
+        String folderName = node == graph.getRoot() ? "" : node.path.substring(node.path.lastIndexOf(File.separator)+1);
+        path.add(folderName);
+
+        if(node.leaf) {
+            if(chk_folders) validFolderStructure(path);
+            File leaf_folder = new File(node.path);
+            if(!leaf_folder.exists()) throw new IllegalStateException("graph structure error: leaf folder doesn't exist wtf??");
+            for(File f : leaf_folder.listFiles())
+            {
+                if(chk_folders && f.isDirectory()) invalidFolders.get(FolderErrors.FOLDER_IN_LEAF).add(f.getAbsolutePath());
+                if(chk_files) checkFile(node, f);
+            }
+        } else {
+            if(chk_folders) checkFolder(node);
+            for(FileGraph.Node child : node.children.values()) checkAllDfs(child, path, chk_files, chk_folders);
+        }
+
+        // pop folder name out
+        path.remove(path.size()-1);
+    }
+
+    public Map<FileErrors, List<String>> getFileErrors() {
+        return new HashMap<>(this.invalidFiles);
+    }
+
+    public Map<FolderErrors, List<String>> getFolderErrors() {
+        return new HashMap<>(this.invalidFolders);
+    }
+
     // check file for correct folder and in leaf folder
     public boolean checkFile(FileGraph.Node parentNode, File file) {
         if(!correctFolder(parentNode.path, file)) {
-            System.out.printf("%s in incorrect folder\n", file.getAbsolutePath());
+            invalidFiles.get(FileErrors.WRONG_FOLDER).add(file.getAbsolutePath());
             return false;
         } else if(!parentNode.leaf) {
-            System.out.printf("%s not in leaf folder\n", file.getAbsolutePath());
+            invalidFiles.get(FileErrors.NOT_IN_LEAF).add(file.getAbsolutePath());
         }
 
         return true;
@@ -50,10 +100,10 @@ public class ModelChecker {
 
     // check folder for valid name, num of files <= threshold, no empty folders (maybe?)
     public boolean checkFolder(FileGraph.Node folderNode) {
-        if(!validFolderName(folderNode.path)) {
-            System.out.printf("%s is not a valid folder\n", folderNode.path);
+        if(!validFolderName(FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, folderNode.path))) {
+            invalidFolders.get(FolderErrors.INVALID_NAME).add(folderNode.path);
         } else if(!validNumOfFiles(folderNode)) {
-            System.out.printf("%s has more files than allowed: num=%d\n", folderNode.path, folderNode.fileCount);
+            invalidFolders.get(FolderErrors.ABOVE_THRESHOLD).add(folderNode.path);
         }
 
         return true;
@@ -94,6 +144,11 @@ public class ModelChecker {
         return folder.fileCount <= threshold;
     }
 
+    /**
+     *
+     * @param folders string name of folders (not absolute path) from root to the last one, root string must be ""
+     * @return true if correct, false if wrong
+     */
     public boolean validFolderStructure(List<String> folders) {
         String folderPrefix = "";
 
