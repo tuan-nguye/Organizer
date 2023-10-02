@@ -188,9 +188,6 @@ public class ModelCheckerTest {
 
     @Test
     public void checkAllTestIncorrectSingle() {
-        // TODO add invalid folders and files
-        // TODO checker should find all of them
-        // TODO and then remove them again
         // file in wrong folder
         File fileWrongFolder = new File(repoPath+File.separator+"1970", "wrong_folder.txt");
 
@@ -236,9 +233,6 @@ public class ModelCheckerTest {
             fail(e.getMessage());
         }
 
-        // update graph
-        graph.update(graph.getRoot());
-
         checker.checkAll(true, true);
 
         // check if all errors have been found
@@ -258,6 +252,8 @@ public class ModelCheckerTest {
         FileTools.delete(folderInvalidName);
         FileTools.delete(folderAboveThreshold);
         FileTools.delete(fileNonLeaf);
+
+        graph.update(graph.getRoot());
     }
 
     @Test

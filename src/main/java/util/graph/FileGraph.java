@@ -7,7 +7,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class FileGraph {
     public static class Node {
@@ -39,6 +41,7 @@ public class FileGraph {
         File file = new File(node.path);
         if(!file.isDirectory()) return;
         int fileCount = 0;
+        Set<String> toRemove = new HashSet<>(node.children.keySet());
 
         for(File child : file.listFiles()) {
             if(child.isFile()) {
@@ -48,10 +51,12 @@ public class FileGraph {
                 String nextStr = child.getAbsolutePath();
                 if(!node.children.containsKey(nextStr)) node.children.put(nextStr, new Node(nextStr, node.depth+1));
                 Node nextNode = node.children.get(nextStr);
+                toRemove.remove(nextStr);
                 update(nextNode);
             }
         }
 
+        for(String rm : toRemove) node.children.remove(rm);
         node.fileCount = fileCount;
         node.leaf = node.children.isEmpty();
     }
