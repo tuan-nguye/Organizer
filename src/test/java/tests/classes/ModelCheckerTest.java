@@ -12,9 +12,8 @@ import parser.command.InitializeRepository;
 import resources.GenerateExampleFiles;
 import resources.InitializeTestRepository;
 import util.FileTools;
-import util.consistency.FileErrors;
-import util.consistency.FolderErrors;
 import util.consistency.ModelChecker;
+import util.consistency.ModelError;
 import util.graph.FileGraph;
 
 import java.io.File;
@@ -180,11 +179,7 @@ public class ModelCheckerTest {
     public void checkAllCorrect() {
         checker.checkAll(true, true);
         String out = "";
-        for(Map.Entry<FileErrors, List<String>> e : checker.getFileErrors().entrySet()) {
-            if(!e.getValue().isEmpty()) out += e + "\n";
-        }
-
-        for(Map.Entry<FolderErrors, List<String>> e : checker.getFolderErrors().entrySet()) {
+        for(Map.Entry<ModelError, List<String>> e : checker.getErrors().entrySet()) {
             if(!e.getValue().isEmpty()) out += e + "\n";
         }
 
@@ -192,9 +187,101 @@ public class ModelCheckerTest {
     }
 
     @Test
-    public void checkAllTestIncorrect() {
+    public void checkAllTestIncorrectSingle() {
         // TODO add invalid folders and files
         // TODO checker should find all of them
         // TODO and then remove them again
+        // file in wrong folder
+        File fileWrongFolder = new File(repoPath+File.separator+"1970", "wrong_folder.txt");
+
+        try {
+            new File(repoPath+File.separator+"1970").mkdirs();
+            fileWrongFolder.createNewFile();
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        // incorrect folder name
+        File folderInvalidName = new File(repoPath+File.separator+"el_wiwi");
+        try {
+            folderInvalidName.mkdirs();
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        // number of files above threshold
+        long lm = 1079387493013l;
+        LocalDateTime ldt = FileTools.dateTime(lm);
+        FileGraph.Node node = graph.getNode(ldt);
+        File folderAboveThreshold = new File(node.path);
+        try {
+            folderAboveThreshold.mkdirs();
+            File f0 = new File(folderAboveThreshold, "above_thresh0.txt");
+            f0.createNewFile();
+            f0.setLastModified(lm);
+            File f1 = new File(folderAboveThreshold, "above_thresh1.txt");
+            f1.createNewFile();
+            f1.setLastModified(lm);
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        // files in non leaf node
+        File folderNonLeaf = new File(repoPath+File.separator+"2023");
+        File fileNonLeaf = new File(folderNonLeaf, "file_inner_node.txt");
+        try {
+            fileNonLeaf.createNewFile();
+            fileNonLeaf.setLastModified(1675387890214l);
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        // update graph
+        graph.update(graph.getRoot());
+
+        checker.checkAll(true, true);
+
+        // check if all errors have been found
+        Map<ModelError, List<String>> errors = checker.getErrors();
+
+        for(ModelError me : ModelError.values()) {
+            if(errors.get(me).size() != 1) fail(me + " not found");
+        }
+
+        assertEquals(errors.get(ModelError.FILE_IN_WRONG_FOLDER).get(0), fileWrongFolder.getAbsolutePath());
+        assertEquals(errors.get(ModelError.INVALID_FOLDER_NAME).get(0), folderInvalidName.getAbsolutePath());
+        assertEquals(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD).get(0), folderAboveThreshold.getAbsolutePath());
+        assertEquals(errors.get(ModelError.FILES_IN_NON_LEAF).get(0), folderNonLeaf.getAbsolutePath());
+        assertEquals(errors.get(ModelError.INVALID_FOLDER_STRUCTURE).get(0), folderInvalidName.getAbsolutePath());
+
+        FileTools.delete(fileWrongFolder.getParentFile());
+        FileTools.delete(folderInvalidName);
+        FileTools.delete(folderAboveThreshold);
+        FileTools.delete(fileNonLeaf);
+    }
+
+    @Test
+    public void testCheckAllIncorrectMultiple() {
+        File folderInvalidNameAboveThreshold = new File(repoPath+File.separator+"el_wiwi");
+        File f0 = new File(folderInvalidNameAboveThreshold, "el_wiwi0.png");
+        File f1 = new File(folderInvalidNameAboveThreshold, "el_wiwi1.png");
+
+        try {
+            folderInvalidNameAboveThreshold.mkdirs();
+            f0.createNewFile();
+            f1.createNewFile();
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        checker.checkAll(true, true);
+
+        int numErr = 0;
+        for(Map.Entry<ModelError, List<String>> e : checker.getErrors().entrySet()) {
+            numErr += e.getValue().size();
+        }
+        assertEquals(5, numErr);
+
+        FileTools.delete(folderInvalidNameAboveThreshold);
     }
 }

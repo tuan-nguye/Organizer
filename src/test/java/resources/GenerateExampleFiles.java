@@ -8,7 +8,12 @@ public class GenerateExampleFiles {
 
     /*
     example txt files dynamically generated:
-    in order: 21.03.2023 09:25:10, 03.02.2023 02:31:30, 17.07.2010 19:24:53, 17.03.2023 22:13:03, 19.08.2021 17:32:03
+    in order:
+    21.03.2023 09:25:10,
+    03.02.2023 02:31:30,
+    17.07.2010 19:24:53,
+    17.03.2023 22:13:03,
+    19.08.2021 17:32:03
      */
     private static final long[] exampleFileTimes = new long[] {1679387110238l, 1675387890214l, 1279387493013l, 1679087583401l, 1629387123456l};
 
