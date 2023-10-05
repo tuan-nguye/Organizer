@@ -28,7 +28,7 @@ public class ThresholdOrganizerTest {
     @BeforeAll
     public static void prepare() {
         Configuration conf = new Configuration();
-        InitializeTestRepository.generateRepository(repoPath, conf);
+        InitializeTestRepository.generateRepository(repoPath, conf, 1);
 
         organizer = new ThresholdOrganizer(new Copy(), 1);
         organizer.allowExtension("txt");

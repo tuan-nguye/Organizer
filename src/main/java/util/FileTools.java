@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Properties;
 
 public class FileTools {
@@ -172,6 +173,11 @@ public class FileTools {
         Instant instant = Instant.ofEpochMilli(lastModified);
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         return dateTime;
+    }
+
+    public static long epochMilli(LocalDateTime ldt) {
+        ZonedDateTime zdt = ldt.atZone(ZoneId.systemDefault());
+        return zdt.toInstant().toEpochMilli();
     }
 
     public static String getFileExtension(File file) {

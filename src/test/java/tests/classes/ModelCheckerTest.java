@@ -5,14 +5,12 @@ import org.junit.jupiter.api.Test;
 import organizer.Organizer;
 import organizer.ThresholdOrganizer;
 import organizer.copy.Copy;
-import parser.CommandException;
 import parser.Configuration;
-import parser.command.Command;
-import parser.command.InitializeRepository;
 import resources.GenerateExampleFiles;
 import resources.InitializeTestRepository;
 import util.FileTools;
 import util.consistency.ModelChecker;
+import util.consistency.ModelElement;
 import util.consistency.ModelError;
 import util.graph.FileGraph;
 
@@ -29,6 +27,7 @@ public class ModelCheckerTest {
     private static Configuration config;
     private static FileGraph graph;
     private static ModelChecker checker;
+    private static int threshold = 1;
 
     /**
      * "test-bin/repo/2010/test2.txt",
@@ -41,9 +40,9 @@ public class ModelCheckerTest {
     @BeforeAll
     public static void prepare() {
         config = new Configuration();
-        InitializeTestRepository.generateRepository(repoPath, config);
+        InitializeTestRepository.generateRepository(repoPath, config, threshold);
 
-        Organizer organizer = new ThresholdOrganizer(new Copy(), 1);
+        Organizer organizer = new ThresholdOrganizer(new Copy(), threshold);
         organizer.allowExtension("txt");
         organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath, repoPath);
 
@@ -62,7 +61,7 @@ public class ModelCheckerTest {
             if(node.leaf) {
                 File folder = new File(node.path);
                 for(File file : folder.listFiles()) {
-                    assertTrue(checker.correctFolder(node.path, file));
+                    assertTrue(checker.correctFolder(node, file));
                 }
             } else {
                 for(FileGraph.Node children : node.children.values()) {
@@ -73,7 +72,7 @@ public class ModelCheckerTest {
     }
 
     @Test
-    public void testFileInFalseFolder() {
+    public void testFileInWrongFolder() {
         File folder = new File(repoPath, "2009");
         File falseFile = new File(folder, "falseFile.txt");
 
@@ -86,7 +85,8 @@ public class ModelCheckerTest {
 
         graph.update(graph.getRoot());
 
-        assertFalse(checker.correctFolder(repoPath+File.separator+"2009", falseFile));
+        FileGraph.Node node = graph.getNode(LocalDateTime.of(2009, 1, 1, 1, 1));
+        assertFalse(checker.correctFolder(node, falseFile));
 
         falseFile.delete();
         folder.delete();
@@ -179,7 +179,7 @@ public class ModelCheckerTest {
     public void checkAllCorrect() {
         checker.checkAll(true, true);
         String out = "";
-        for(Map.Entry<ModelError, List<String>> e : checker.getErrors().entrySet()) {
+        for(Map.Entry<ModelError, List<ModelElement>> e : checker.getErrors().entrySet()) {
             if(!e.getValue().isEmpty()) out += e + "\n";
         }
 
@@ -236,17 +236,17 @@ public class ModelCheckerTest {
         checker.checkAll(true, true);
 
         // check if all errors have been found
-        Map<ModelError, List<String>> errors = checker.getErrors();
+        Map<ModelError, List<ModelElement>> errors = checker.getErrors();
 
         for(ModelError me : ModelError.values()) {
             if(errors.get(me).size() != 1) fail(me + " not found");
         }
 
-        assertEquals(errors.get(ModelError.FILE_IN_WRONG_FOLDER).get(0), fileWrongFolder.getAbsolutePath());
-        assertEquals(errors.get(ModelError.INVALID_FOLDER_NAME).get(0), folderInvalidName.getAbsolutePath());
-        assertEquals(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD).get(0), folderAboveThreshold.getAbsolutePath());
-        assertEquals(errors.get(ModelError.FILES_IN_NON_LEAF).get(0), folderNonLeaf.getAbsolutePath());
-        assertEquals(errors.get(ModelError.INVALID_FOLDER_STRUCTURE).get(0), folderInvalidName.getAbsolutePath());
+        assertEquals(errors.get(ModelError.FILE_IN_WRONG_FOLDER).get(0).toString(), fileWrongFolder.getAbsolutePath());
+        assertEquals(errors.get(ModelError.INVALID_FOLDER_NAME).get(0).toString(), folderInvalidName.getAbsolutePath());
+        assertEquals(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD).get(0).toString(), folderAboveThreshold.getAbsolutePath());
+        assertEquals(errors.get(ModelError.FILES_IN_NON_LEAF).get(0).toString(), folderNonLeaf.getAbsolutePath());
+        assertEquals(errors.get(ModelError.INVALID_FOLDER_STRUCTURE).get(0).toString(), folderInvalidName.getAbsolutePath());
 
         FileTools.delete(fileWrongFolder.getParentFile());
         FileTools.delete(folderInvalidName);
@@ -256,6 +256,9 @@ public class ModelCheckerTest {
         graph.update(graph.getRoot());
     }
 
+    // folder with multiple errors
+    // should have 3 errors: invalid name, above threshold, and wrong structure
+    // files should not get errors because the parent folder already takes care of that
     @Test
     public void testCheckAllIncorrectMultiple() {
         File folderInvalidNameAboveThreshold = new File(repoPath+File.separator+"el_wiwi");
@@ -273,10 +276,11 @@ public class ModelCheckerTest {
         checker.checkAll(true, true);
 
         int numErr = 0;
-        for(Map.Entry<ModelError, List<String>> e : checker.getErrors().entrySet()) {
+        for(Map.Entry<ModelError, List<ModelElement>> e : checker.getErrors().entrySet()) {
             numErr += e.getValue().size();
         }
-        assertEquals(5, numErr);
+
+        assertEquals(3, numErr);
 
         FileTools.delete(folderInvalidNameAboveThreshold);
     }

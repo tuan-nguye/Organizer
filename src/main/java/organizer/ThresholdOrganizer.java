@@ -23,8 +23,29 @@ public class ThresholdOrganizer extends Organizer {
 
     @Override
     public void copyAndOrganize(String source, String destination) {
+        copyAndOrganize(source, destination, false);
+    }
+
+    public void copyAndOrganize(String source, String destination, boolean immediateFilesOnly) {
         fileGraph = new FileGraph(destination);
-        dfs(new File(source));
+        if(immediateFilesOnly) organizeImmediateFiles(new File(source));
+        else dfs(new File(source));
+    }
+
+    private void organizeImmediateFiles(File file) {
+        if(file.isFile()) {
+            if(!allowExtension(FileTools.getFileExtension(file))) return;
+            copyFile(file);
+            incrementCounter();
+            notifyObservers();
+        } else {
+            for(File child : file.listFiles(a -> a.isFile())) {
+                if(!allowExtension(FileTools.getFileExtension(child))) return;
+                copyFile(child);
+                incrementCounter();
+                notifyObservers();
+            }
+        }
     }
 
     private void dfs(File file) {
@@ -39,6 +60,7 @@ public class ThresholdOrganizer extends Organizer {
             }
         }
     }
+
     protected boolean copyFile(File f) {
         LocalDateTime dateTime = FileTools.dateTime(f.lastModified());
         FileGraph.Node node = getDirectory(dateTime);
