@@ -73,7 +73,7 @@ public class FileTools {
     // clear the directory and deletes all files terminally but preserves directories, files are NOT moved to the trash bin
     // USE AT OWN RISK peepoSHAKE
     public static void clearFilesOnly(File file) {
-        if(file == null) return;
+        if(file == null || !file.exists()) return;
         else if(file.isFile()) {
             file.delete();
             return;
@@ -86,7 +86,7 @@ public class FileTools {
     // recursively deletes all files and directories, root directory also deleted, files are NOT moved to the trash bin
     // USE AT OWN RISK peepoSHAKE
     public static void delete(File file) {
-        if(file == null) return;
+        if(file == null || !file.exists()) return;
         else if(file.isFile()) {
             file.delete();
             return;

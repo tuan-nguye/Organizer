@@ -3,6 +3,7 @@ package tests.classes;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import util.graph.FileGraph;
+import util.graph.FileGraphFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -40,7 +41,7 @@ public class FileGraphTest {
             absoluteExamplePaths[i] = dir.getAbsolutePath();
         }
 
-        fileGraph = new FileGraph(root);
+        fileGraph = FileGraphFactory.getFileGraph(root);
     }
 
     @Test

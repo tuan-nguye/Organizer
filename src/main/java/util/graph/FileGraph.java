@@ -39,7 +39,10 @@ public class FileGraph {
 
     public void update(Node node) {
         File file = new File(node.path);
-        if(!file.isDirectory()) return;
+        if(!file.exists() || !file.isDirectory()) {
+            node.children.clear();
+            return;
+        }
         int fileCount = 0;
         Set<String> toRemove = new HashSet<>(node.children.keySet());
 

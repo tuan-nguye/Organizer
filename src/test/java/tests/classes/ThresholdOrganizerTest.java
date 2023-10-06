@@ -2,19 +2,14 @@ package tests.classes;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import organizer.Organizer;
 import organizer.ThresholdOrganizer;
 import organizer.copy.Copy;
-import parser.CommandException;
 import parser.Configuration;
-import parser.command.Command;
-import parser.command.InitializeRepository;
 import resources.GenerateExampleFiles;
 import resources.InitializeTestRepository;
 import util.FileTools;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +26,7 @@ public class ThresholdOrganizerTest {
         InitializeTestRepository.generateRepository(repoPath, conf, 1);
 
         organizer = new ThresholdOrganizer(new Copy(), 1);
-        organizer.allowExtension("txt");
+        organizer.fileExtensionAllowed("txt");
     }
 
     @Test
@@ -56,7 +51,7 @@ public class ThresholdOrganizerTest {
 
     @Test
     public void addUnallowedFileExtension() {
-        organizer.addFileExtension("txt");
+        organizer.allowFileExtension("txt");
         organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath+File.separator+"csv", repoPath);
         assertEquals(0, FileTools.count(new File(repoPath), (dir, name) -> name.contains("csv")));
     }

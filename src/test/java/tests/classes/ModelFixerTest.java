@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import organizer.Organizer;
 import organizer.ThresholdOrganizer;
 import organizer.copy.Copy;
+import organizer.copy.ICopy;
+import organizer.copy.Move;
 import parser.Configuration;
 import resources.GenerateExampleFiles;
 import resources.InitializeTestRepository;
@@ -14,16 +16,15 @@ import util.consistency.ModelElement;
 import util.consistency.ModelError;
 import util.consistency.ModelFixer;
 import util.graph.FileGraph;
+import util.graph.FileGraphFactory;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ModelFixerTest {
     private static final String repoPath = Path.of("test-bin/repoModelFix").toAbsolutePath().toString();
@@ -44,26 +45,34 @@ public class ModelFixerTest {
     @BeforeAll
     public static void prepare() {
         config = new Configuration();
-        InitializeTestRepository.generateRepository(repoPath, config, threshold);
+        graph = FileGraphFactory.getFileGraph(repoPath);
+        resetRepo();
 
-        Organizer organizer = new ThresholdOrganizer(new Copy(), threshold);
-        organizer.allowExtension("txt");
-        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath, repoPath);
-
-        graph = new FileGraph(repoPath);
         checker = new ModelChecker(config);
         fixer = new ModelFixer(config);
     }
 
     /**
-     * insertedd errors:
+     * reset repo to initial files and directory state
+     */
+    private static void resetRepo() {
+        FileTools.delete(new File(repoPath));
+        graph.update(graph.getRoot());
+        InitializeTestRepository.generateRepository(repoPath, config, threshold);
+        Organizer organizer = new ThresholdOrganizer(new Copy(), threshold);
+        organizer.allowFileExtension("txt");
+        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath, repoPath);
+    }
+
+    /**
+     * inserted errors:
      *   - number of files above threshold
      *   - file in the wrong folder
      *   - file in inner folder instead of leaf
      *   - empty folder with invalid name
      */
     @Test
-    public void fixMultipleErrors() {
+    public void fixMultipleErrorsByMovingTest() {
         // file in wrong folder
         File fileWrongFolder = new File(repoPath+File.separator+"1970", "wrong_folder.txt");
 
@@ -112,6 +121,7 @@ public class ModelFixerTest {
             fail(e.getMessage());
         }
 
+        graph.update(graph.getRoot());
         checker.checkAll(true, true);
         Map<ModelError, List<ModelElement>> errors = checker.getErrors();
 
@@ -125,18 +135,83 @@ public class ModelFixerTest {
         }
 
         // clean up
-        FileTools.delete(new File(repoPath));
-        InitializeTestRepository.generateRepository(repoPath, config, threshold);
-        Organizer organizer = new ThresholdOrganizer(new Copy(), threshold);
-        organizer.allowExtension("txt");
-        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath, repoPath);
+        resetRepo();
+    }
+
+    /**
+     * add useless folders and empty ones
+     * structure should be reduced to be minimal
+     */
+    @Test
+    public void reduceTest() {
+        ICopy move = new Move();
+        File test2Txt = new File(repoPath+File.separator+"2010", "test2.txt");
+        File folder2010Feb16 = new File(repoPath+File.separator+"2010"+File.separator+"2010_feb"+File.separator+"2010_feb_16");
+        File reduceTxt = new File(folder2010Feb16, "reduce.txt");
+        long lm_reduce = FileTools.epochMilli(LocalDateTime.of(2010, 2, 16, 0, 0));
+
+        try {
+            File folder2010Jul = new File(repoPath+File.separator+"2010"+File.separator+"2010_jul");
+            folder2010Jul.mkdir();
+            move.execute(test2Txt.toPath(), folder2010Jul.toPath().resolve(test2Txt.getName()));
+            folder2010Feb16.mkdirs();
+            reduceTxt.createNewFile();
+            reduceTxt.setLastModified(lm_reduce);
+            File folder2020Oct = new File(repoPath+File.separator+"2010"+File.separator+"2010_oct");
+            folder2020Oct.mkdir();
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        fixer.reduceStructure();
+        assertTrue(new File(repoPath+File.separator+"2010", "test2.txt").exists());
+        assertTrue(new File(repoPath+File.separator+"2010", "reduce.txt").exists());
+        assertEquals(2, new File(repoPath+File.separator+"2010").listFiles(a->a.isFile()).length);
+        assertEquals(0, new File(repoPath+File.separator+"2010").listFiles(a->a.isDirectory()).length);
+
+        // clean up
+        resetRepo();
+    }
+
+    /**
+     * test whether folder names are restored correctly
+     */
+    @Test
+    public void restoreFolderNamesTest() {
+        File folder2023März = new File(repoPath+File.separator+"2023"+File.separator+"2023_märz");
+        File folder2023 = new File(repoPath+File.separator+"2023");
+
+        try {
+            folder2023März.renameTo(new File(folder2023März.getParentFile(), "el_wiwi"));
+            folder2023.renameTo(new File(folder2023.getParentFile(), "shttng_tthpst"));
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
         graph.update(graph.getRoot());
+
+        checker.checkAll(true, true);
+        Map<ModelError, List<ModelElement>> errors = checker.getErrors();
+        assertEquals(2, errors.get(ModelError.INVALID_FOLDER_STRUCTURE).size());
+        fixer.fixStructure(errors, true, true);
+
+        checker.checkAll(true, true);
+        errors = checker.getErrors();
+        for(List<ModelElement> errorList : errors.values()) {
+            assertEquals(0, errorList.size());
+        }
+    }
+
+    /**
+     * idempotent, fixing a valid structure should not change anything
+     * simulate by executing on fake errors
+     */
+    @Test
+    public void correctStructureTest() {
+
     }
 
     @Test
     public void test() {
-        String path = "/a/ab/bb/c";
-        String[] split = path.split(File.separator);
-        System.out.println(Arrays.toString(split));
+
     }
 }

@@ -25,12 +25,12 @@ public abstract class Organizer implements observer.Subject<Integer> {
         count++;
     }
 
-    public void addFileExtension(String ext) {
+    public void allowFileExtension(String ext) {
         if(allowedFileExtensions == null) allowedFileExtensions = new HashSet<>();
         allowedFileExtensions.add(ext);
     }
 
-    public boolean allowExtension(String ext) {
+    public boolean fileExtensionAllowed(String ext) {
         if(allowedFileExtensions == null) return true;
         else return allowedFileExtensions.contains(ext);
     }

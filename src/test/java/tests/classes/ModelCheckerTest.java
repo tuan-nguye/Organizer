@@ -13,6 +13,7 @@ import util.consistency.ModelChecker;
 import util.consistency.ModelElement;
 import util.consistency.ModelError;
 import util.graph.FileGraph;
+import util.graph.FileGraphFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,10 +44,10 @@ public class ModelCheckerTest {
         InitializeTestRepository.generateRepository(repoPath, config, threshold);
 
         Organizer organizer = new ThresholdOrganizer(new Copy(), threshold);
-        organizer.allowExtension("txt");
+        organizer.allowFileExtension("txt");
         organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath, repoPath);
 
-        graph = new FileGraph(repoPath);
+        graph = FileGraphFactory.getFileGraph(repoPath);
         checker = new ModelChecker(config);
     }
 
@@ -135,6 +136,7 @@ public class ModelCheckerTest {
     public void testValidFolderName() {
         Deque<FileGraph.Node> stack = new ArrayDeque<>();
         FileGraph.Node root = graph.getRoot();
+        graph.update(root);
         stack.push(root);
 
         while(!stack.isEmpty()) {
@@ -233,6 +235,7 @@ public class ModelCheckerTest {
             fail(e.getMessage());
         }
 
+        graph.update(graph.getRoot());
         checker.checkAll(true, true);
 
         // check if all errors have been found
@@ -273,6 +276,7 @@ public class ModelCheckerTest {
             fail(e.getMessage());
         }
 
+        graph.update(graph.getRoot());
         checker.checkAll(true, true);
 
         int numErr = 0;

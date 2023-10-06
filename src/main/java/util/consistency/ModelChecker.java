@@ -3,6 +3,7 @@ package util.consistency;
 import parser.Configuration;
 import util.FileTools;
 import util.graph.FileGraph;
+import util.graph.FileGraphFactory;
 import util.time.DateIterator;
 import util.time.DateStats;
 
@@ -20,7 +21,7 @@ public class ModelChecker {
     private Map<ModelError, List<ModelElement>> errors = new HashMap<>();
 
     public ModelChecker(Configuration config) {
-        this.graph = new FileGraph(Configuration.PROPERTY_FILE_PATH_STRING);
+        this.graph = FileGraphFactory.getFileGraph(Configuration.PROPERTY_FILE_PATH_STRING);
         this.config = config;
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
     }
@@ -39,7 +40,7 @@ public class ModelChecker {
         if(!chkFiles && !chkFolders) return;
         errors.clear();
         for(ModelError me : ModelError.values()) errors.put(me, new ArrayList<>());
-        graph.update(graph.getRoot());
+        //graph.update(graph.getRoot());
         checkAllDfs(graph.getRoot(), new ArrayList<>(), chkFiles, chkFolders);
     }
 

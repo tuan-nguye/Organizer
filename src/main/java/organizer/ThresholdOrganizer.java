@@ -5,6 +5,7 @@ import organizer.copy.Move;
 import parser.Configuration;
 import util.FileTools;
 import util.graph.FileGraph;
+import util.graph.FileGraphFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,20 +28,20 @@ public class ThresholdOrganizer extends Organizer {
     }
 
     public void copyAndOrganize(String source, String destination, boolean immediateFilesOnly) {
-        fileGraph = new FileGraph(destination);
+        fileGraph = FileGraphFactory.getFileGraph(destination);
         if(immediateFilesOnly) organizeImmediateFiles(new File(source));
         else dfs(new File(source));
     }
 
     private void organizeImmediateFiles(File file) {
         if(file.isFile()) {
-            if(!allowExtension(FileTools.getFileExtension(file))) return;
+            if(!fileExtensionAllowed(FileTools.getFileExtension(file))) return;
             copyFile(file);
             incrementCounter();
             notifyObservers();
         } else {
             for(File child : file.listFiles(a -> a.isFile())) {
-                if(!allowExtension(FileTools.getFileExtension(child))) return;
+                if(!fileExtensionAllowed(FileTools.getFileExtension(child))) return;
                 copyFile(child);
                 incrementCounter();
                 notifyObservers();
@@ -50,7 +51,7 @@ public class ThresholdOrganizer extends Organizer {
 
     private void dfs(File file) {
         if(file.isFile()) {
-            if(!allowExtension(FileTools.getFileExtension(file))) return;
+            if(!fileExtensionAllowed(FileTools.getFileExtension(file))) return;
             copyFile(file);
             incrementCounter();
             notifyObservers();
