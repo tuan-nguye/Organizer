@@ -40,7 +40,8 @@ public class ThresholdOrganizer extends Organizer {
             incrementCounter();
             notifyObservers();
         } else {
-            for(File child : file.listFiles(a -> a.isFile())) {
+            File[] children = file.listFiles(a -> a.isFile());
+            for(File child : children) {
                 if(!fileExtensionAllowed(FileTools.getFileExtension(child))) return;
                 copyFile(child);
                 incrementCounter();
@@ -63,6 +64,8 @@ public class ThresholdOrganizer extends Organizer {
     }
 
     protected boolean copyFile(File f) {
+        if(!f.exists()) return false;
+        if(f.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) return false;
         LocalDateTime dateTime = FileTools.dateTime(f.lastModified());
         FileGraph.Node node = getDirectory(dateTime);
         Path path = Path.of(node.path);
@@ -71,7 +74,7 @@ public class ThresholdOrganizer extends Organizer {
         try {
             operation.execute(f.toPath(), path.resolve(f.getName()));
         } catch(IOException ioe) {
-            System.out.println("warning: " + ioe + "" + ioe.getMessage());
+            System.out.println("warning: " + ioe + ": " + ioe.getMessage());
             return false;
         }
 

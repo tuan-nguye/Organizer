@@ -12,7 +12,6 @@ import resources.GenerateExampleFiles;
 import resources.InitializeTestRepository;
 import util.FileTools;
 import util.consistency.ModelChecker;
-import util.consistency.ModelElement;
 import util.consistency.ModelError;
 import util.consistency.ModelFixer;
 import util.graph.FileGraph;
@@ -123,14 +122,14 @@ public class ModelFixerTest {
 
         graph.update(graph.getRoot());
         checker.checkAll(true, true);
-        Map<ModelError, List<ModelElement>> errors = checker.getErrors();
+        Map<ModelError, List<FileGraph.Node>> errors = checker.getErrors();
 
         // fix structure and check if everything is correct
-        fixer.fixStructure(errors, true, true);
+        fixer.fixStructure(errors, true, true); // reorganizing messes up files
         checker.checkAll(true, true);
 
         errors = checker.getErrors();
-        for(Map.Entry<ModelError, List<ModelElement>> e : errors.entrySet()) {
+        for(Map.Entry<ModelError, List<FileGraph.Node>> e : errors.entrySet()) {
             assertEquals(0, e.getValue().size());
         }
 
@@ -163,6 +162,7 @@ public class ModelFixerTest {
             fail(e.getMessage());
         }
 
+        graph.update(graph.getRoot());
         fixer.reduceStructure();
         assertTrue(new File(repoPath+File.separator+"2010", "test2.txt").exists());
         assertTrue(new File(repoPath+File.separator+"2010", "reduce.txt").exists());
@@ -180,8 +180,13 @@ public class ModelFixerTest {
     public void restoreFolderNamesTest() {
         File folder2023März = new File(repoPath+File.separator+"2023"+File.separator+"2023_märz");
         File folder2023 = new File(repoPath+File.separator+"2023");
+        File folderRandom = new File(repoPath+File.separator+"2023"+File.separator+"random");
+        File fileRandom = new File(folderRandom, "random.txt");
 
         try {
+            folderRandom.mkdir();
+            fileRandom.createNewFile();
+            fileRandom.setLastModified(FileTools.epochMilli(LocalDateTime.of(2008, 1, 1, 0, 0)));
             folder2023März.renameTo(new File(folder2023März.getParentFile(), "el_wiwi"));
             folder2023.renameTo(new File(folder2023.getParentFile(), "shttng_tthpst"));
         } catch(Exception e) {
@@ -190,15 +195,17 @@ public class ModelFixerTest {
         graph.update(graph.getRoot());
 
         checker.checkAll(true, true);
-        Map<ModelError, List<ModelElement>> errors = checker.getErrors();
-        assertEquals(2, errors.get(ModelError.INVALID_FOLDER_STRUCTURE).size());
+        Map<ModelError, List<FileGraph.Node>> errors = checker.getErrors();
+        assertEquals(3, errors.get(ModelError.INVALID_FOLDER_STRUCTURE).size());
         fixer.fixStructure(errors, true, true);
 
         checker.checkAll(true, true);
         errors = checker.getErrors();
-        for(List<ModelElement> errorList : errors.values()) {
+        for(List<FileGraph.Node> errorList : errors.values()) {
             assertEquals(0, errorList.size());
         }
+
+        resetRepo();
     }
 
     /**

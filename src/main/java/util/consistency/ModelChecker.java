@@ -18,7 +18,7 @@ public class ModelChecker {
     private Configuration config;
     private int threshold;
     // saved errors after check
-    private Map<ModelError, List<ModelElement>> errors = new HashMap<>();
+    private Map<ModelError, List<FileGraph.Node>> errors = new HashMap<>();
 
     public ModelChecker(Configuration config) {
         this.graph = FileGraphFactory.getFileGraph(Configuration.PROPERTY_FILE_PATH_STRING);
@@ -41,60 +41,56 @@ public class ModelChecker {
         errors.clear();
         for(ModelError me : ModelError.values()) errors.put(me, new ArrayList<>());
         //graph.update(graph.getRoot());
-        checkAllDfs(graph.getRoot(), new ArrayList<>(), chkFiles, chkFolders);
+        checkAllDfs(graph.getRoot(), new ArrayList<>());
     }
 
     /**
      * the function recursively iterates through the filegraph and searches
      * for inconsistencies
+     *
      * @param node node to start dfs at
      * @param path list of folders on its current path
-     * @param chkFiles boolean value, check files or not
-     * @param chkFolders boolean value, check folders or not
      */
-    private void checkAllDfs(FileGraph.Node node, List<String> path, boolean chkFiles, boolean chkFolders) {
+    private void checkAllDfs(FileGraph.Node node, List<String> path) {
         // add folder name to path
         String folderName = FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, node.path);
         path.add(folderName);
-        boolean validFolder = true;
-        if(chkFolders) validFolder = checkFolder(node);
+        boolean validFolder = checkFolder(node);
 
         if(node.leaf) {
-            if(chkFolders && !validFolderStructure(path)) errors.get(ModelError.INVALID_FOLDER_STRUCTURE).add(new ModelElement(node));
+            if(!validFolderStructure(path)) errors.get(ModelError.INVALID_FOLDER_STRUCTURE).add(node);
             File leaf_folder = new File(node.path);
             if(!leaf_folder.exists()) throw new IllegalStateException("graph structure error: leaf folder doesn't exist, mismatch between filegraph and real structure");
-            if(chkFiles && validFolder) {
+            if(validFolder) {
                 for(File f : leaf_folder.listFiles())
-                    checkFile(node, f);
+                    if(!checkFile(node, f)) {
+                        errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES).add(node);
+                        break;
+                    }
             }
 
         } else {
-            for(FileGraph.Node child : node.children.values()) checkAllDfs(child, path, chkFiles, chkFolders);
+            for(FileGraph.Node child : node.children.values()) checkAllDfs(child, path);
         }
 
         // pop folder name out
         path.remove(path.size()-1);
     }
 
-    public Map<ModelError, List<ModelElement>> getErrors() {
+    public Map<ModelError, List<FileGraph.Node>> getErrors() {
         return new HashMap<>(this.errors);
     }
 
     // check file for correct folder and in leaf folder
     public boolean checkFile(FileGraph.Node parentNode, File file) {
-        if(!correctFolder(parentNode, file) || !parentNode.leaf) {
-            errors.get(ModelError.FILE_IN_WRONG_FOLDER).add(new ModelElement(parentNode, file.getName()));
-            return false;
-        }
-
-        return true;
+        return parentNode.leaf && correctFolder(parentNode, file);
     }
 
     public boolean correctFolder(FileGraph.Node parentNode, File file) {
         if(parentNode == graph.getRoot()) return true;
 
         DateIterator it = new DateIterator(FileTools.dateTime(file.lastModified()));
-        String folderName = parentNode.path.substring(parentNode.path.lastIndexOf(File.separator)+1);
+        String folderName = FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, parentNode.path);
         String[] folderSplit = folderName.split("_");
         if(parentNode.depth != folderSplit.length) return false;
 
@@ -112,15 +108,15 @@ public class ModelChecker {
         boolean validFolder = true;
 
         if(!validFolderName(FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, folderNode.path))) {
-            errors.get(ModelError.INVALID_FOLDER_NAME).add(new ModelElement(folderNode));
+            errors.get(ModelError.INVALID_FOLDER_NAME).add(folderNode);
             validFolder = false;
         }
         if(!validNumOfFiles(folderNode)) {
-            errors.get(ModelError.FOLDER_ABOVE_THRESHOLD).add(new ModelElement(folderNode));
+            errors.get(ModelError.FOLDER_ABOVE_THRESHOLD).add(folderNode);
             validFolder = false;
         }
         if(!folderNode.leaf && folderNode.fileCount != 0) {
-            errors.get(ModelError.FILES_IN_NON_LEAF).add(new ModelElement(folderNode));
+            errors.get(ModelError.FILES_IN_NON_LEAF).add(folderNode);
             validFolder = false;
         }
 

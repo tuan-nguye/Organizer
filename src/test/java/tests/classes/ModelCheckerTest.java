@@ -10,7 +10,6 @@ import resources.GenerateExampleFiles;
 import resources.InitializeTestRepository;
 import util.FileTools;
 import util.consistency.ModelChecker;
-import util.consistency.ModelElement;
 import util.consistency.ModelError;
 import util.graph.FileGraph;
 import util.graph.FileGraphFactory;
@@ -164,7 +163,7 @@ public class ModelCheckerTest {
                 testValidFolderStructureRec(next, folders);
             }
         } else {
-            System.out.println(folders);
+            //System.out.println(folders);
             assertTrue(checker.validFolderStructure(folders));
         }
 
@@ -181,7 +180,7 @@ public class ModelCheckerTest {
     public void checkAllCorrect() {
         checker.checkAll(true, true);
         String out = "";
-        for(Map.Entry<ModelError, List<ModelElement>> e : checker.getErrors().entrySet()) {
+        for(Map.Entry<ModelError, List<FileGraph.Node>> e : checker.getErrors().entrySet()) {
             if(!e.getValue().isEmpty()) out += e + "\n";
         }
 
@@ -239,17 +238,17 @@ public class ModelCheckerTest {
         checker.checkAll(true, true);
 
         // check if all errors have been found
-        Map<ModelError, List<ModelElement>> errors = checker.getErrors();
+        Map<ModelError, List<FileGraph.Node>> errors = checker.getErrors();
 
         for(ModelError me : ModelError.values()) {
             if(errors.get(me).size() != 1) fail(me + " not found");
         }
 
-        assertEquals(errors.get(ModelError.FILE_IN_WRONG_FOLDER).get(0).toString(), fileWrongFolder.getAbsolutePath());
-        assertEquals(errors.get(ModelError.INVALID_FOLDER_NAME).get(0).toString(), folderInvalidName.getAbsolutePath());
-        assertEquals(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD).get(0).toString(), folderAboveThreshold.getAbsolutePath());
-        assertEquals(errors.get(ModelError.FILES_IN_NON_LEAF).get(0).toString(), folderNonLeaf.getAbsolutePath());
-        assertEquals(errors.get(ModelError.INVALID_FOLDER_STRUCTURE).get(0).toString(), folderInvalidName.getAbsolutePath());
+        assertEquals(errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES).get(0).path, fileWrongFolder.getParentFile().getAbsolutePath());
+        assertEquals(errors.get(ModelError.INVALID_FOLDER_NAME).get(0).path, folderInvalidName.getAbsolutePath());
+        assertEquals(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD).get(0).path, folderAboveThreshold.getAbsolutePath());
+        assertEquals(errors.get(ModelError.FILES_IN_NON_LEAF).get(0).path, folderNonLeaf.getAbsolutePath());
+        assertEquals(errors.get(ModelError.INVALID_FOLDER_STRUCTURE).get(0).path, folderInvalidName.getAbsolutePath());
 
         FileTools.delete(fileWrongFolder.getParentFile());
         FileTools.delete(folderInvalidName);
@@ -280,7 +279,7 @@ public class ModelCheckerTest {
         checker.checkAll(true, true);
 
         int numErr = 0;
-        for(Map.Entry<ModelError, List<ModelElement>> e : checker.getErrors().entrySet()) {
+        for(Map.Entry<ModelError, List<FileGraph.Node>> e : checker.getErrors().entrySet()) {
             numErr += e.getValue().size();
         }
 
