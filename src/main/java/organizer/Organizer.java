@@ -2,6 +2,8 @@ package organizer;
 
 import observer.Observer;
 import organizer.copy.ICopy;
+import util.graph.FileGraph;
+import util.graph.FileGraphFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,14 +14,16 @@ public abstract class Organizer implements observer.Subject<Integer> {
     private List<Observer> obs = new ArrayList<>();
     private int count = 0;
     protected ICopy operation;
+    protected FileGraph fileGraph;
 
     private Set<String> allowedFileExtensions = null;
 
-    public Organizer(ICopy operation) {
+    public Organizer(ICopy operation, String repoPath) {
         this.operation = operation;
+        fileGraph = FileGraphFactory.get(repoPath);
     }
 
-    public abstract void copyAndOrganize(String source, String destination);
+    public abstract void copyAndOrganize(String source);
 
     public void incrementCounter() {
         count++;

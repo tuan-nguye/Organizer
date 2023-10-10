@@ -67,13 +67,13 @@ public class OrganizeFiles extends Command {
         else if(skip) copyOperation = new CopyReplace();
         else copyOperation = new Copy();
         int folderSize = Integer.parseInt(config.getProperties().getProperty("folderSize"));
-        Organizer thresholdOrganizer = new ThresholdOrganizer(copyOperation, folderSize);
+        Organizer thresholdOrganizer = new ThresholdOrganizer(copyOperation, folderSize, destination);
 
         for(String ext : extensions) thresholdOrganizer.fileExtensionAllowed(ext);
 
         bar.setSubject(thresholdOrganizer);
         thresholdOrganizer.register(bar);
 
-        thresholdOrganizer.copyAndOrganize(source, destination);
+        thresholdOrganizer.copyAndOrganize(source);
     }
 }

@@ -41,7 +41,7 @@ public class FileGraphTest {
             absoluteExamplePaths[i] = dir.getAbsolutePath();
         }
 
-        fileGraph = FileGraphFactory.getFileGraph(root);
+        fileGraph = FileGraphFactory.get(root);
     }
 
     @Test

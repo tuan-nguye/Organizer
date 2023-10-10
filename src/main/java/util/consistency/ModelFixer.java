@@ -4,6 +4,7 @@ import organizer.ThresholdOrganizer;
 import organizer.copy.ICopy;
 import organizer.copy.Move;
 import parser.Configuration;
+import util.DateTools;
 import util.FileTools;
 import util.graph.FileGraph;
 import util.graph.FileGraphFactory;
@@ -21,7 +22,7 @@ public class ModelFixer {
     private int threshold;
 
     public ModelFixer(Configuration config) {
-        fileGraph = FileGraphFactory.getFileGraph(Configuration.PROPERTY_FILE_PATH_STRING);
+        fileGraph = FileGraphFactory.get(Configuration.PROPERTY_FILE_PATH_STRING);
         checker = new ModelChecker(config);
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
     }
@@ -36,16 +37,21 @@ public class ModelFixer {
         } else {
             unrestorableFolders = new HashSet<>(errors.get(ModelError.INVALID_FOLDER_STRUCTURE));
             unrestorableFolders.addAll(errors.get(ModelError.INVALID_FOLDER_NAME));
+            unrestorableFolders.addAll(errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES));
         }
         // union of invalid folder name, above threshold, and files in non leaf folder
         // move all of them to (tmp directory/directly into structure)
-        for(FileGraph.Node fn : errors.get(ModelError.FOLDER_ABOVE_THRESHOLD)) unrestorableFolders.add(fn);
-        for(FileGraph.Node fn : errors.get(ModelError.FILES_IN_NON_LEAF)) unrestorableFolders.add(fn);
-        for(FileGraph.Node fn : errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES)) unrestorableFolders.add(fn);
-        ThresholdOrganizer org = new ThresholdOrganizer(new Move(), threshold);
+        unrestorableFolders.addAll(errors.get(ModelError.FILES_IN_NON_LEAF));
+        Set<FileGraph.Node> foldersAboveThreshold = new HashSet<>();
         for(FileGraph.Node invalidFolder : unrestorableFolders) {
-            org.copyAndOrganize(invalidFolder.path, fileGraph.getRoot().path, true);
-            invalidFolder.fileCount = 0;
+            copyFilesToCorrectLocation(invalidFolder, foldersAboveThreshold);
+            if(invalidFolder.leaf) invalidFolder.fileCount = FileTools.countDirectFiles(new File(invalidFolder.path));
+            else invalidFolder.fileCount = 0;
+        }
+        ThresholdOrganizer org = new ThresholdOrganizer(new Move(), threshold, fileGraph.getRoot().path);
+        foldersAboveThreshold.addAll(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD));
+        for(FileGraph.Node folder : foldersAboveThreshold) {
+            org.reorganize(folder);
         }
         reduceStructure();
     }
@@ -54,145 +60,183 @@ public class ModelFixer {
         // put all faulty folders in one set
         Set<FileGraph.Node> faultyFolders = new HashSet<>();
         for(FileGraph.Node fn : errors.get(ModelError.INVALID_FOLDER_STRUCTURE)) {
-            String[] folders = fn.path.substring(fileGraph.getRoot().path.length()+1).split(Pattern.quote(File.separator));
-            FileGraph.Node node = fileGraph.getRoot();
-            StringBuilder key = new StringBuilder(node.path);
-            faultyFolders.add(node);
-            for(int i = 0; i < folders.length; i++) {
-                key.append(File.separator).append(folders[i]);
-                node = node.children.get(key.toString());
-                faultyFolders.add(node);
-            }
-
+            List<FileGraph.Node> path = getPathToNode(fn);
+            faultyFolders.addAll(path);
         }
-        for(FileGraph.Node fn : errors.get(ModelError.INVALID_FOLDER_NAME)) faultyFolders.add(fn);
-        for(FileGraph.Node fn : errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES)) faultyFolders.add(fn);
+
+        faultyFolders.addAll(errors.get(ModelError.INVALID_FOLDER_NAME));
+        faultyFolders.addAll(errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES));
 
         // restore
-        Set<FileGraph.Node> unrestorableFolders = new HashSet<>();
 
         for(FileGraph.Node fn : errors.get(ModelError.INVALID_FOLDER_STRUCTURE)) {
             String original = fn.path;
-            String[] folders = fn.path.substring(fileGraph.getRoot().path.length()+1).split(Pattern.quote(File.separator));
-            List<FileGraph.Node> path = new ArrayList<>();
-            FileGraph.Node node = fileGraph.getRoot();
-            StringBuilder key = new StringBuilder(node.path);
-            path.add(node);
-            for(int i = 0; i < folders.length; i++) {
-                key.append(File.separator).append(folders[i]);
-                node = node.children.get(key.toString());
-                path.add(node);
-            }
+            List<FileGraph.Node> path = getPathToNode(fn);
+            boolean restored = restoreFolder(fn, path, faultyFolders);
 
-            // start with leaf node, if valid name: do nothing
-            // else: iterate through all files, if all from same date: restore folder name, else: mark as unrestorable
-            boolean restored = false;
-            File leafFolder = new File(fn.path);
-            StringBuilder folderNameBuilder = new StringBuilder();
-            File[] files = leafFolder.listFiles();
-            if(files.length == 0) {
-                for(FileGraph.Node np : path) unrestorableFolders.add(np);
-                continue;
-            }
-            if(files == null) throw new NullPointerException("listFiles() of leaf folder is null");
-            DateIterator di = new DateIterator(FileTools.dateTime(files[0].lastModified()));
-            boolean first = true;
-            for(int i = 0; i < fn.depth; i++) {
-                if(first) first = false;
-                else folderNameBuilder.append("_");
-                folderNameBuilder.append(di.next());
-            }
-            String folderName = folderNameBuilder.toString();
-            boolean same = true;
-            for(File f : files) {
-                if(!correctFolder(folderName, f)) {
-                    same = false;
-                    break;
-                }
-            }
-            if(!same) {
-                for(FileGraph.Node np : path) unrestorableFolders.add(np);
-                continue;
-            }
-
-            if(!leafFolder.getName().equals(folderName)) {
-                // check sibling nodes
-                if(path.size() >= 3) {
-                    String prefix = folderName.substring(0, folderName.lastIndexOf('_'));
-                    FileGraph.Node parentNode = path.get(path.size()-2);
-                    boolean restorable = true;
-                    for(FileGraph.Node sibling : parentNode.children.values()) {
-                        if(faultyFolders.contains(sibling)) continue;
-                        String siblingFolder = FileTools.getFolderNameWithoutPrefix(fileGraph.getRoot().path, sibling.path);
-                        if(!siblingFolder.startsWith(prefix)) {
-                            for(FileGraph.Node np : path) unrestorableFolders.add(np);
-                            restorable = false;
-                            break;
-                        }
-                    }
-                    if(!restorable) continue;
-                }
-
-                // attempt rename
-                if(!leafFolder.renameTo(new File(leafFolder.getParentFile(), folderName))) {
-                    for(FileGraph.Node np : path) unrestorableFolders.add(np);
-                    continue;
-                } else {
-                    path.get(path.size()-1).path = path.get(path.size()-2).path + File.separator + folderName;
-                    restored = true;
-                }
-            }
-
-            // complete the rest
-            FileGraph.Node prevNode = fn;
-            for(int i = path.size()-2; i >= 1; i--) {
-                FileGraph.Node currNode = path.get(i);
-                File currFolder = new File(currNode.path);
-                String newFolderName = FileTools.getFolderNameWithoutPrefix(fileGraph.getRoot().path, prevNode.path);
-                int idxUnderscore = newFolderName.lastIndexOf("_");
-                if(idxUnderscore != -1) {
-                    newFolderName = newFolderName.substring(0, idxUnderscore);
-                } else throw new IllegalStateException("should not rename root folder");
-
-                if(!newFolderName.equals(currFolder.getName())) {
-                    // check siblings
-                    if(i >= 2) {
-                        String prefix = folderName.substring(0, folderName.lastIndexOf('_'));
-                        FileGraph.Node parentNode = path.get(path.size()-2);
-                        boolean restorable = true;
-                        for(FileGraph.Node sibling : parentNode.children.values()) {
-                            if(faultyFolders.contains(sibling)) continue;
-                            String siblingFolder = FileTools.getFolderNameWithoutPrefix(fileGraph.getRoot().path, sibling.path);
-                            if(!siblingFolder.startsWith(prefix)) {
-                                for(FileGraph.Node np : path) unrestorableFolders.add(np);
-                                restorable = false;
-                                break;
-                            }
-                        }
-                        if(!restorable) break;
-                    }
-
-                    // attempt rename
-                    if(!currFolder.renameTo(new File(currFolder.getParentFile(), newFolderName))) {
-                        for(FileGraph.Node np : path) unrestorableFolders.add(np);
-                        break;
-                    } else {
-                        currNode.path = path.get(i-1).path + File.separator + newFolderName;
-                        restored = true;
-                    }
-                }
-
-                prevNode = currNode;
-            }
-            if(restored) {
+            if(restored && !fn.path.equals(original)) {
                 updateFolders();
-                for(FileGraph.Node fnn : path) faultyFolders.remove(fnn);
+                path = getPathToNode(fn);
+                faultyFolders.removeAll(path);
                 System.out.printf("successfully restored structure:\n%s -> %s\n", original, fn.toString());
+            } else {
+                faultyFolders.addAll(path);
             }
-
         }
 
-        return unrestorableFolders;
+        return faultyFolders;
+    }
+
+    public boolean restoreFolder(FileGraph.Node node, List<FileGraph.Node> path, Set<FileGraph.Node> faultyFolders) {
+        if(!restoreLeafFolder(node, path, faultyFolders)) return false;
+        if(!restoreInnerFolders(node, path, faultyFolders)) return false;
+        return true;
+    }
+
+    private boolean restoreLeafFolder(FileGraph.Node node, List<FileGraph.Node> path, Set<FileGraph.Node> faultyFolders) {
+        if(!allAreSameDate(node)) return false;
+
+        File leafFolder = new File(node.path);
+        File[] files = leafFolder.listFiles(a -> a.isFile());
+        if(files.length == 0) throw new IllegalStateException("folder size is 0");
+        String folderName = DateTools.folderName(files[0], node.depth);
+
+
+        if(!leafFolder.getName().equals(folderName)) {
+            // check sibling nodes
+            if(path.size() >= 3 && !validateWithSiblings(path.get(path.size()-2), node, faultyFolders)) {
+                return false;
+            }
+
+            // attempt rename
+            if(!renameFolder(node, folderName)) return false;
+        }
+
+        return true;
+    }
+
+    private boolean restoreInnerFolders(FileGraph.Node node, List<FileGraph.Node> path, Set<FileGraph.Node> faultyFolders) {
+        FileGraph.Node nextNode = node;
+
+        for(int i = path.size()-2; i >= 1; i--) {
+            FileGraph.Node currNode = path.get(i);
+            File currFolder = new File(currNode.path);
+            String newFolderName = correctPreviousFolderName(nextNode.path);
+
+            if(!newFolderName.equals(currFolder.getName())) {
+                if(!validateWithSiblings(path.get(i-1), currNode, faultyFolders)) {
+                    return false;
+                }
+
+                if(!renameFolder(currNode, newFolderName)) return false;
+            }
+
+            nextNode = currNode;
+        }
+
+        return true;
+    }
+
+    /**
+     *
+     * @param node
+     * @return returns the path from root to given node in a list
+     */
+    private List<FileGraph.Node> getPathToNode(FileGraph.Node node) {
+        String[] folders = node.path.substring(fileGraph.getRoot().path.length()+1).split(Pattern.quote(File.separator));
+        List<FileGraph.Node> path = new ArrayList<>();
+        FileGraph.Node temp = fileGraph.getRoot();
+        StringBuilder key = new StringBuilder(temp.path);
+        path.add(temp);
+        for(int i = 0; i < folders.length; i++) {
+            key.append(File.separator).append(folders[i]);
+            temp = temp.children.get(key.toString());
+            path.add(temp);
+        }
+
+        return path;
+    }
+
+    /**
+     *
+     * @param node
+     * @return true if there are files in the folder, and they are
+     * all from the same date until the node's depth
+     */
+    private boolean allAreSameDate(FileGraph.Node node) {
+        File folder = new File(node.path);
+        StringBuilder folderNameBuilder = new StringBuilder();
+        File[] files = folder.listFiles(a -> a.isFile());
+
+        if(files == null || files.length == 0) return false;
+
+        DateIterator di = new DateIterator(FileTools.dateTime(files[0].lastModified()));
+        boolean first = true;
+        for(int i = 0; i < node.depth; i++) {
+            if(first) first = false;
+            else folderNameBuilder.append("_");
+            folderNameBuilder.append(di.next());
+        }
+        String folderName = folderNameBuilder.toString();
+
+        for(File f : files) {
+            if(!correctFolder(folderName, f)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     *
+     * @param parent
+     * @param node
+     * @param faultyNodes
+     * @return true if the new folder name is conform with the other
+     * valid sibling nodes
+     */
+    private boolean  validateWithSiblings(FileGraph.Node parent, FileGraph.Node node, Set<FileGraph.Node> faultyNodes) {
+        if(node.depth <= 1) return true;
+        String folderName = DateTools.folderName(new File(node.path).listFiles(a -> a.isFile())[0], node.depth);
+
+        String prefix = folderName.substring(0, folderName.lastIndexOf('_'));
+        for(FileGraph.Node sibling : parent.children.values()) {
+            if(faultyNodes.contains(sibling)) continue;
+            String siblingFolder = FileTools.getFolderNameWithoutPrefix(fileGraph.getRoot().path, sibling.path);
+            if(!siblingFolder.startsWith(prefix)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     *
+     * @param folderPath
+     * @return the correct folder given the next folder name, e.g.
+     * if folderName = "2008_jan" then the correct previous folder
+     * is "2008"
+     */
+    private String correctPreviousFolderName(String folderPath) {
+        String folderName = FileTools.getFolderNameWithoutPrefix(fileGraph.getRoot().path, folderPath);
+        int idxUnderscore = folderName.lastIndexOf("_");
+        if(idxUnderscore != -1) folderName = folderName.substring(0, idxUnderscore);
+        else folderName = "";
+
+        return folderName;
+    }
+
+    private boolean renameFolder(FileGraph.Node node, String newFolderName) {
+        File folder = new File(node.path);
+        File renamedFolder = new File(folder.getParent(), newFolderName);
+        if(!folder.renameTo(renamedFolder)) {
+            return false;
+        }
+
+        node.path = renamedFolder.getAbsolutePath();
+        return true;
     }
 
     private void updateFolders() {
@@ -234,6 +278,28 @@ public class ModelFixer {
         return true;
     }
 
+    private void copyFilesToCorrectLocation(FileGraph.Node folderNode, Set<FileGraph.Node> foldersAboveThreshold) {
+        File folder = new File(folderNode.path);
+        ICopy move = new Move();
+
+        for(File file : folder.listFiles(f -> f.isFile())) {
+            if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
+            FileGraph.Node correctNode = fileGraph.getNode(FileTools.dateTime(file.lastModified()));
+            File correctFolder = new File(correctNode.path);
+            if(!correctFolder.exists()) correctFolder.mkdir();
+            Path from = file.toPath(), to = Path.of(correctNode.path, file.getName());
+            if(from.equals(to)) continue;
+
+            try {
+                move.execute(file.toPath(), Path.of(correctNode.path, file.getName()));
+                correctNode.fileCount++;
+                if(correctNode.fileCount > threshold) foldersAboveThreshold.add(correctNode);
+            } catch(IOException ioe) {
+                System.out.println("modelfixer: error when moving file to correct location");
+                ioe.printStackTrace();
+            }
+        }
+    }
 
     /**
      * reduce the structure if it shouldnt be split
@@ -243,7 +309,6 @@ public class ModelFixer {
      * dfs post order
      */
     public void reduceStructure() {
-        fileGraph.update(fileGraph.getRoot());
         reduceStructure(fileGraph.getRoot());
     }
 

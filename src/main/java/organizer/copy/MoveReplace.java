@@ -9,7 +9,7 @@ import java.nio.file.StandardCopyOption;
 public class MoveReplace implements ICopy {
     @Override
     public void execute(Path from, Path to) throws IOException {
-        if(from.equals(to)) return;
+        if(from.equals(to)) throw new IOException("file already exists");
         Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
     }
 }

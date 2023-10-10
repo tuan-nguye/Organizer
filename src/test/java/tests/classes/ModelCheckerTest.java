@@ -42,11 +42,11 @@ public class ModelCheckerTest {
         config = new Configuration();
         InitializeTestRepository.generateRepository(repoPath, config, threshold);
 
-        Organizer organizer = new ThresholdOrganizer(new Copy(), threshold);
+        Organizer organizer = new ThresholdOrganizer(new Copy(), threshold, repoPath);
         organizer.allowFileExtension("txt");
-        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath, repoPath);
+        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath);
 
-        graph = FileGraphFactory.getFileGraph(repoPath);
+        graph = FileGraphFactory.get(repoPath);
         checker = new ModelChecker(config);
     }
 

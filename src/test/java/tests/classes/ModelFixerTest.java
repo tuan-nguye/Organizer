@@ -44,7 +44,7 @@ public class ModelFixerTest {
     @BeforeAll
     public static void prepare() {
         config = new Configuration();
-        graph = FileGraphFactory.getFileGraph(repoPath);
+        graph = FileGraphFactory.get(repoPath);
         resetRepo();
 
         checker = new ModelChecker(config);
@@ -58,9 +58,9 @@ public class ModelFixerTest {
         FileTools.delete(new File(repoPath));
         graph.update(graph.getRoot());
         InitializeTestRepository.generateRepository(repoPath, config, threshold);
-        Organizer organizer = new ThresholdOrganizer(new Copy(), threshold);
+        Organizer organizer = new ThresholdOrganizer(new Copy(), threshold, repoPath);
         organizer.allowFileExtension("txt");
-        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath, repoPath);
+        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath);
     }
 
     /**

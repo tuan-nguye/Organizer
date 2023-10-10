@@ -21,7 +21,7 @@ public class ModelChecker {
     private Map<ModelError, List<FileGraph.Node>> errors = new HashMap<>();
 
     public ModelChecker(Configuration config) {
-        this.graph = FileGraphFactory.getFileGraph(Configuration.PROPERTY_FILE_PATH_STRING);
+        this.graph = FileGraphFactory.get(Configuration.PROPERTY_FILE_PATH_STRING);
         this.config = config;
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
     }

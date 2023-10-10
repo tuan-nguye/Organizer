@@ -25,13 +25,13 @@ public class ThresholdOrganizerTest {
         Configuration conf = new Configuration();
         InitializeTestRepository.generateRepository(repoPath, conf, 1);
 
-        organizer = new ThresholdOrganizer(new Copy(), 1);
+        organizer = new ThresholdOrganizer(new Copy(), 1, repoPath);
         organizer.fileExtensionAllowed("txt");
     }
 
     @Test
     public void testCopyAndOrganize() {
-        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath+File.separator+"txt", repoPath);
+        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath+File.separator+"txt");
 
         String[] files = new String[] {
                 "test-bin/repo/2010/test2.txt",
@@ -52,7 +52,7 @@ public class ThresholdOrganizerTest {
     @Test
     public void addUnallowedFileExtension() {
         organizer.allowFileExtension("txt");
-        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath+File.separator+"csv", repoPath);
+        organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath+File.separator+"csv");
         assertEquals(0, FileTools.count(new File(repoPath), (dir, name) -> name.contains("csv")));
     }
 }

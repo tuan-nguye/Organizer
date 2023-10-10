@@ -13,42 +13,19 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 public class ThresholdOrganizer extends Organizer {
-    private FileGraph fileGraph;
     private int threshold;
     private ICopy move = new Move();
 
-    public ThresholdOrganizer(ICopy op, int threshold) {
-        super(op);
+    public ThresholdOrganizer(ICopy op, int threshold, String repoPath) {
+        super(op, repoPath);
         this.threshold = threshold;
     }
 
     @Override
-    public void copyAndOrganize(String source, String destination) {
-        copyAndOrganize(source, destination, false);
+    public void copyAndOrganize(String source) {
+        dfs(new File(source));
     }
 
-    public void copyAndOrganize(String source, String destination, boolean immediateFilesOnly) {
-        fileGraph = FileGraphFactory.getFileGraph(destination);
-        if(immediateFilesOnly) organizeImmediateFiles(new File(source));
-        else dfs(new File(source));
-    }
-
-    private void organizeImmediateFiles(File file) {
-        if(file.isFile()) {
-            if(!fileExtensionAllowed(FileTools.getFileExtension(file))) return;
-            copyFile(file);
-            incrementCounter();
-            notifyObservers();
-        } else {
-            File[] children = file.listFiles(a -> a.isFile());
-            for(File child : children) {
-                if(!fileExtensionAllowed(FileTools.getFileExtension(child))) return;
-                copyFile(child);
-                incrementCounter();
-                notifyObservers();
-            }
-        }
-    }
 
     private void dfs(File file) {
         if(file.isFile()) {
@@ -89,7 +66,7 @@ public class ThresholdOrganizer extends Organizer {
         return node;
     }
 
-    private void reorganize(FileGraph.Node node) {
+    public void reorganize(FileGraph.Node node) {
         if(node.fileCount <= threshold) return;
         node.leaf = false;
         File directory = new File(node.path);
@@ -101,6 +78,7 @@ public class ThresholdOrganizer extends Organizer {
 
             try {
                 move.execute(file.toPath(), path.resolve(file.getName()));
+                //nextNode.fileCount++;
             } catch(IOException ioe) {
                 System.err.println("error reorganizing " + file.getName());
                 ioe.printStackTrace();
