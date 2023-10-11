@@ -241,7 +241,7 @@ public class ModelCheckerTest {
         Map<ModelError, List<FileGraph.Node>> errors = checker.getErrors();
 
         for(ModelError me : ModelError.values()) {
-            if(errors.get(me).size() != 1) fail(me + " not found");
+            assertEquals(1, errors.get(me).size());
         }
 
         assertEquals(errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES).get(0).path, fileWrongFolder.getParentFile().getAbsolutePath());
@@ -286,14 +286,5 @@ public class ModelCheckerTest {
         assertEquals(3, numErr);
 
         FileTools.delete(folderInvalidNameAboveThreshold);
-    }
-
-    @Test
-    public void test() {
-        graph.update(graph.getRoot());
-        checker.checkAll(true, true);
-        for(List<FileGraph.Node> list : checker.getErrors().values()) {
-            assertEquals(0, list.size());
-        }
     }
 }

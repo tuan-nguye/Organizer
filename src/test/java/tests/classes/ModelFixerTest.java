@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -146,15 +148,15 @@ public class ModelFixerTest {
     public void reduceTest() {
         ICopy move = new Move();
         File test2Txt = new File(repoPath+File.separator+"2010", "test2.txt");
-        File folder2010Feb16 = new File(repoPath+File.separator+"2010"+File.separator+"2010_feb"+File.separator+"2010_feb_16");
-        File reduceTxt = new File(folder2010Feb16, "reduce.txt");
+        File folder2010Feb1615h_9min_10s = new File(repoPath+File.separator+"2010"+File.separator+"2010_feb"+File.separator+"2010_feb_16"+File.separator+"2010_feb_16_15h"+File.separator+"2010_feb_16_15h_9min"+File.separator+"2010_feb_16_15h_9min_10s");
+        File reduceTxt = new File(folder2010Feb1615h_9min_10s, "reduce.txt");
         long lm_reduce = FileTools.epochMilli(LocalDateTime.of(2010, 2, 16, 0, 0));
 
         try {
             File folder2010Jul = new File(repoPath+File.separator+"2010"+File.separator+"2010_jul");
             folder2010Jul.mkdir();
             move.execute(test2Txt.toPath(), folder2010Jul.toPath().resolve(test2Txt.getName()));
-            folder2010Feb16.mkdirs();
+            folder2010Feb1615h_9min_10s.mkdirs();
             reduceTxt.createNewFile();
             reduceTxt.setLastModified(lm_reduce);
             File folder2020Oct = new File(repoPath+File.separator+"2010"+File.separator+"2010_oct");
@@ -215,7 +217,27 @@ public class ModelFixerTest {
      */
     @Test
     public void correctStructureTest() {
+        Map<ModelError, List<FileGraph.Node>> errors = new HashMap<>();
+        for(ModelError me : ModelError.values()) errors.put(me, new ArrayList<>());
+        LocalDateTime ldt = LocalDateTime.of(2023, 3, 1, 0, 0);
+        errors.get(ModelError.INVALID_FOLDER_NAME).add(graph.getNode(ldt));
+        errors.get(ModelError.INVALID_FOLDER_STRUCTURE).add(graph.getNode(ldt));
 
+        ldt = LocalDateTime.of(2010, 1, 1, 0, 0);
+        errors.get(ModelError.CAN_BE_REDUCED).add(graph.getNode(ldt));
+        errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES).add(graph.getNode(ldt));
+
+        errors.get(ModelError.FILES_IN_NON_LEAF).add(graph.getRoot().children.get(graph.getRoot().path+File.separator+"2023"));
+
+        ldt = LocalDateTime.of(2023, 2, 1, 0, 0);
+        errors.get(ModelError.FOLDER_ABOVE_THRESHOLD).add(graph.getNode(ldt));
+
+        fixer.fixStructure(errors, true, true);
+        checker.checkAll(true, true);
+
+        for(List<FileGraph.Node> list : checker.getErrors().values()) {
+            assertEquals(0, list.size());
+        }
     }
 
     @Test

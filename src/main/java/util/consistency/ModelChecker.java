@@ -50,12 +50,14 @@ public class ModelChecker {
      *
      * @param node node to start dfs at
      * @param path list of folders on its current path
+     * @return returns the sum of files in child nodes
      */
-    private void checkAllDfs(FileGraph.Node node, List<String> path) {
+    private int checkAllDfs(FileGraph.Node node, List<String> path) {
         // add folder name to path
         String folderName = FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, node.path);
         path.add(folderName);
         boolean validFolder = checkFolder(node);
+        int numFiles = 0;
 
         if(node.leaf) {
             if(!validFolderStructure(path)) errors.get(ModelError.INVALID_FOLDER_STRUCTURE).add(node);
@@ -68,13 +70,19 @@ public class ModelChecker {
                         break;
                     }
             }
-
+            numFiles = node.fileCount;
         } else {
-            for(FileGraph.Node child : node.children.values()) checkAllDfs(child, path);
+            for(FileGraph.Node child : node.children.values()) {
+                numFiles += checkAllDfs(child, path);
+            }
         }
+
+        if(node.leaf && numFiles == 0) errors.get(ModelError.CAN_BE_REDUCED).add(node);
+        else if(!node.leaf && numFiles <= threshold) errors.get(ModelError.CAN_BE_REDUCED).add(node);
 
         // pop folder name out
         path.remove(path.size()-1);
+        return numFiles;
     }
 
     public Map<ModelError, List<FileGraph.Node>> getErrors() {
