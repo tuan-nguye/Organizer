@@ -18,6 +18,7 @@ import util.graph.FileGraph;
 import util.graph.FileGraphFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -219,6 +220,10 @@ public class ModelFixerTest {
 
     @Test
     public void test() {
-
+        File folder2023 = new File(repoPath + File.separator + "2023");
+        folder2023.renameTo(new File(repoPath + File.separator + "2022"));
+        graph.update(graph.getRoot());
+        checker.checkAll(true, true);
+        fixer.fixStructure(checker.getErrors(), true, true);
     }
 }

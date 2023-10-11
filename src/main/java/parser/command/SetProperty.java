@@ -33,7 +33,7 @@ public class SetProperty extends Command {
 
         for(String arg : args) {
             int idxAssign = arg.indexOf('=');
-            if(idxAssign == -1) {
+            if(idxAssign == -1 || idxAssign == arg.length()-1) {
                 System.err.println("value is missing for property " + arg);
                 return;
             }

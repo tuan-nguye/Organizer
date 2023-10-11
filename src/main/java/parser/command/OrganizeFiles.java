@@ -20,8 +20,8 @@ import java.util.Set;
 public class OrganizeFiles extends Command {
     @Override
     public void validateConfiguration(String[] args, Configuration config) throws CommandException {
-        if(args.length != 2) {
-            throw new CommandException("invalid number of arguments, needs 2");
+        if(args.length != 1) {
+            throw new CommandException("invalid number of arguments, needs 1");
         } // check if source and destination exist, destination is valid repo
 
         if(!Checker.validRepository(Configuration.PROPERTY_FILE_PATH_STRING)) {
@@ -31,7 +31,7 @@ public class OrganizeFiles extends Command {
 
     @Override
     public void executeCommand(String[] args, Configuration config) {
-        String source = args[0], destination = args[1];
+        String source = args[0], destination = Configuration.PROPERTY_FILE_PATH_STRING;
         System.out.printf("copying files %s -> %s\n", source, destination);
 
         Map<String, Option> optionMap = config.allOptions();

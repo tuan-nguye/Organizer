@@ -13,9 +13,9 @@ public class DateIterator implements Iterator<String> {
         time.add(String.valueOf(dateTime.getYear()));
         time.add(DateStats.monthStr[dateTime.getMonthValue()-1]);
         time.add(String.valueOf(dateTime.getDayOfMonth()));
-        time.add(dateTime.getHour()+DateStats.unit[3]);
-        time.add(dateTime.getMinute()+DateStats.unit[4]);
-        time.add(dateTime.getSecond()+DateStats.unit[5]);
+        time.add(dateTime.getHour()+DateStats.unit[4]);
+        time.add(dateTime.getMinute()+DateStats.unit[5]);
+        time.add(dateTime.getSecond()+DateStats.unit[6]);
     }
 
     @Override

@@ -15,13 +15,13 @@ public class Configuration {
 
     Set<String> propertyNames = new HashSet<>(Arrays.asList("folderSize"));
 
-    Set<String> modifiableProperties = new HashSet<>();
+    Set<String> modifiableProperties = new HashSet<>(Arrays.asList("folderSize"));
 
     /* available commands */
     Command organizeCommand = new OrganizeFiles()
             .setName("organize")
-            .setDescription("copy and organize all files according to their time stamp")
-            .setCommandFormat("organize /path/to/source /path/to/destination");
+            .setDescription("copy and organize all files according to their time stamp into the repository in the current working directory")
+            .setCommandFormat("organize /path/to/source");
     Command initCommand = new InitializeRepository()
             .setName("init")
             .setDescription("initialize organizer destination directory, default folder size is 500")
@@ -46,6 +46,14 @@ public class Configuration {
     Command deleteRepository = new DeleteRepository()
             .setName("delete")
             .setDescription("delete repo in current working directory if it exists");
+
+    Command checkCommand = new CheckCommand()
+            .setName("check")
+            .setDescription("check whether the repository structure is consistent");
+
+    Command repairCommand = new RepairCommand()
+            .setName("repair")
+            .setDescription("repair the structure if there are any errors");
 
     /* available options */
     Option skipOption = new FlagOption()
@@ -75,6 +83,8 @@ public class Configuration {
         allCommands.put(versionCommand.getName(), versionCommand);
         allCommands.put(setPropertyCommand.getName(), setPropertyCommand);
         allCommands.put(deleteRepository.getName(), deleteRepository);
+        allCommands.put(checkCommand.getName(), checkCommand);
+        allCommands.put(repairCommand.getName(), repairCommand);
         return allCommands;
     }
 

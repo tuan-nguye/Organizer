@@ -43,7 +43,7 @@ public class CheckCommand extends Command {
             ModelError me = e.getKey();
             int errorCount = e.getValue().size();
             int meStrLen = me.toString().length();
-            System.out.printf("%s%s: %d\n", me.toString(), meStrLen == maxLength ? "" : " ".repeat(maxLength-meStrLen), errorCount);
+            System.out.printf("%s%s: %d\n", me.toString(), " ".repeat(maxLength-meStrLen), errorCount);
         }
     }
 }

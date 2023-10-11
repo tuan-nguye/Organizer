@@ -74,11 +74,12 @@ public class ModelFixer {
             List<FileGraph.Node> path = getPathToNode(fn);
             boolean restored = restoreFolder(fn, path, faultyFolders);
 
-            if(restored && !fn.path.equals(original)) {
+            if(restored) updateFolders();
+            if(!fn.path.equals(original)) {
                 updateFolders();
                 path = getPathToNode(fn);
                 faultyFolders.removeAll(path);
-                System.out.printf("successfully restored structure:\n%s -> %s\n", original, fn.toString());
+                System.out.printf("successfully restored structure:\n%s -> %s\n", original, fn.path);
             } else {
                 faultyFolders.addAll(path);
             }

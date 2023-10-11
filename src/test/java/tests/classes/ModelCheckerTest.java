@@ -287,4 +287,13 @@ public class ModelCheckerTest {
 
         FileTools.delete(folderInvalidNameAboveThreshold);
     }
+
+    @Test
+    public void test() {
+        graph.update(graph.getRoot());
+        checker.checkAll(true, true);
+        for(List<FileGraph.Node> list : checker.getErrors().values()) {
+            assertEquals(0, list.size());
+        }
+    }
 }

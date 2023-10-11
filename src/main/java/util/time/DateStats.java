@@ -12,6 +12,7 @@ public class DateStats {
      * inclusive ranges for each time unit
      */
     public static final int[][] dateRange = new int[][] {
+            {Integer.MIN_VALUE, Integer.MAX_VALUE},
             {0, Integer.MAX_VALUE},
             {0, 11},
             {0, 31},    // not correct actually for feb, apr, jun, ...
@@ -20,7 +21,7 @@ public class DateStats {
             {0, 59}
     };
 
-    public static final String[] unit = new String[] {"", "", "", "h", "min", "s"};
+    public static final String[] unit = new String[] {"", "", "", "", "h", "min", "s"};
 
     static {
         for(int i = 0; i < monthStr.length; i++) monthInt.put(monthStr[i], i);

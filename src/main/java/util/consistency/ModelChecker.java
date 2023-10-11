@@ -140,7 +140,7 @@ public class ModelChecker {
         if(depth == 0) return time.isEmpty();
 
         if(!DateStats.unit[depth].isEmpty()) {
-            if(!time.endsWith(DateStats.unit[depth-1])) return false;
+            if(!time.endsWith(DateStats.unit[depth])) return false;
             time = time.substring(0, time.length()-DateStats.unit[depth].length());
         }
         if(depth != 2) {
@@ -150,7 +150,7 @@ public class ModelChecker {
             } catch(NumberFormatException nfe) {
                 return false;
             }
-            if(num < DateStats.dateRange[depth-1][0] || num > DateStats.dateRange[depth-1][1])
+            if(num < DateStats.dateRange[depth][0] || num > DateStats.dateRange[depth][1])
                 return false;
         } else {
             if(!DateStats.monthInt.containsKey(time)) return false;
