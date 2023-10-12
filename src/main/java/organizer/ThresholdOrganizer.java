@@ -6,6 +6,7 @@ import parser.Configuration;
 import util.FileTools;
 import util.graph.FileGraph;
 import util.graph.FileGraphFactory;
+import util.time.DateExtractor;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class ThresholdOrganizer extends Organizer {
     protected boolean copyFile(File f) {
         if(!f.exists()) return false;
         if(f.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) return false;
-        LocalDateTime dateTime = FileTools.dateTime(f.lastModified());
+        LocalDateTime dateTime = DateExtractor.getDate(f);
         FileGraph.Node node = getDirectory(dateTime);
         Path path = Path.of(node.path);
         if(path == null) return false;
@@ -66,6 +67,12 @@ public class ThresholdOrganizer extends Organizer {
         return node;
     }
 
+    /**
+     * assumes that all files in the folder are in the correct folder.
+     * iterates through all files and moves them to a newly created
+     * subdirectory, if the threshold is exceeded
+     * @param node
+     */
     public void reorganize(FileGraph.Node node) {
         if(node.fileCount <= threshold) return;
         node.leaf = false;
@@ -73,19 +80,19 @@ public class ThresholdOrganizer extends Organizer {
 
         for(File file : directory.listFiles(a -> a.isFile())) {
             if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
-            FileGraph.Node nextNode = getDirectory(FileTools.dateTime(file.lastModified()));
+            FileGraph.Node nextNode = getDirectory(DateExtractor.getDate(file));
             Path path = Path.of(nextNode.path);
 
             try {
                 move.execute(file.toPath(), path.resolve(file.getName()));
-                //nextNode.fileCount++;
+                nextNode.fileCount++;
             } catch(IOException ioe) {
                 System.err.println("error reorganizing " + file.getName());
                 ioe.printStackTrace();
             }
         }
 
-        fileGraph.update(node);
+        node.fileCount = 0;
         for(FileGraph.Node child : node.children.values()) {
             reorganize(child);
         }

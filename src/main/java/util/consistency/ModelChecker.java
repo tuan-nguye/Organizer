@@ -4,6 +4,7 @@ import parser.Configuration;
 import util.FileTools;
 import util.graph.FileGraph;
 import util.graph.FileGraphFactory;
+import util.time.DateExtractor;
 import util.time.DateIterator;
 import util.time.DateStats;
 
@@ -54,7 +55,7 @@ public class ModelChecker {
      */
     private int checkAllDfs(FileGraph.Node node, List<String> path) {
         // add folder name to path
-        String folderName = FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, node.path);
+        String folderName = FileTools.getNameWithoutPrefix(graph.getRoot().path, node.path);
         path.add(folderName);
         boolean validFolder = checkFolder(node);
         int numFiles = 0;
@@ -97,8 +98,8 @@ public class ModelChecker {
     public boolean correctFolder(FileGraph.Node parentNode, File file) {
         if(parentNode == graph.getRoot()) return true;
 
-        DateIterator it = new DateIterator(FileTools.dateTime(file.lastModified()));
-        String folderName = FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, parentNode.path);
+        DateIterator it = new DateIterator(DateExtractor.getDate(file));
+        String folderName = FileTools.getNameWithoutPrefix(graph.getRoot().path, parentNode.path);
         String[] folderSplit = folderName.split("_");
         if(parentNode.depth != folderSplit.length) return false;
 
@@ -115,7 +116,7 @@ public class ModelChecker {
     public boolean checkFolder(FileGraph.Node folderNode) {
         boolean validFolder = true;
 
-        if(!validFolderName(FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, folderNode.path))) {
+        if(!validFolderName(FileTools.getNameWithoutPrefix(graph.getRoot().path, folderNode.path))) {
             errors.get(ModelError.INVALID_FOLDER_NAME).add(folderNode);
             validFolder = false;
         }

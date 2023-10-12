@@ -4,7 +4,8 @@ import organizer.ThresholdOrganizer;
 import organizer.copy.ICopy;
 import organizer.copy.Move;
 import parser.Configuration;
-import util.DateTools;
+import util.time.DateExtractor;
+import util.time.DateTools;
 import util.FileTools;
 import util.graph.FileGraph;
 import util.graph.FileGraphFactory;
@@ -51,7 +52,7 @@ public class ModelFixer {
         ThresholdOrganizer org = new ThresholdOrganizer(new Move(), threshold, fileGraph.getRoot().path);
         foldersAboveThreshold.addAll(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD));
         for(FileGraph.Node folder : foldersAboveThreshold) {
-            org.reorganize(folder);
+            if(folder.fileCount > threshold) org.reorganize(folder);
         }
         reduceStructure();
     }
@@ -171,7 +172,7 @@ public class ModelFixer {
 
         if(files == null || files.length == 0) return false;
 
-        DateIterator di = new DateIterator(FileTools.dateTime(files[0].lastModified()));
+        DateIterator di = new DateIterator(DateExtractor.getDate(files[0]));
         boolean first = true;
         for(int i = 0; i < node.depth; i++) {
             if(first) first = false;
@@ -204,7 +205,7 @@ public class ModelFixer {
         String prefix = folderName.substring(0, folderName.lastIndexOf('_'));
         for(FileGraph.Node sibling : parent.children.values()) {
             if(faultyNodes.contains(sibling)) continue;
-            String siblingFolder = FileTools.getFolderNameWithoutPrefix(fileGraph.getRoot().path, sibling.path);
+            String siblingFolder = FileTools.getNameWithoutPrefix(fileGraph.getRoot().path, sibling.path);
             if(!siblingFolder.startsWith(prefix)) {
                 return false;
             }
@@ -221,7 +222,7 @@ public class ModelFixer {
      * is "2008"
      */
     private String correctPreviousFolderName(String folderPath) {
-        String folderName = FileTools.getFolderNameWithoutPrefix(fileGraph.getRoot().path, folderPath);
+        String folderName = FileTools.getNameWithoutPrefix(fileGraph.getRoot().path, folderPath);
         int idxUnderscore = folderName.lastIndexOf("_");
         if(idxUnderscore != -1) folderName = folderName.substring(0, idxUnderscore);
         else folderName = "";
@@ -246,7 +247,7 @@ public class ModelFixer {
     }
 
     private void updateFolders(FileGraph.Node node, StringBuilder path) {
-        String folderName = FileTools.getFolderNameWithoutPrefix(fileGraph.getRoot().path, node.path);
+        String folderName = FileTools.getNameWithoutPrefix(fileGraph.getRoot().path, node.path);
         int originalLength = path.length();
         if(!folderName.isEmpty()) path.append(File.separator).append(folderName);
         node.path = path.toString();
@@ -267,7 +268,7 @@ public class ModelFixer {
     }
 
     private boolean correctFolder(String folderName, File f) {
-        DateIterator it = new DateIterator(FileTools.dateTime(f.lastModified()));
+        DateIterator it = new DateIterator(DateExtractor.getDate(f));
         String[] folderSplit = folderName.split("_");
 
         for(int i = 0; i < folderSplit.length; i++) {
@@ -285,7 +286,7 @@ public class ModelFixer {
 
         for(File file : folder.listFiles(f -> f.isFile())) {
             if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
-            FileGraph.Node correctNode = fileGraph.getNode(FileTools.dateTime(file.lastModified()));
+            FileGraph.Node correctNode = fileGraph.getNode(DateExtractor.getDate(file));
             File correctFolder = new File(correctNode.path);
             if(!correctFolder.exists()) correctFolder.mkdir();
             Path from = file.toPath(), to = Path.of(correctNode.path, file.getName());

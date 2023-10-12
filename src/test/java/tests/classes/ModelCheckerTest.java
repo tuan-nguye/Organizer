@@ -140,7 +140,7 @@ public class ModelCheckerTest {
 
         while(!stack.isEmpty()) {
             FileGraph.Node node = stack.pop();
-            String folderName = FileTools.getFolderNameWithoutPrefix(root.path, node.path);
+            String folderName = FileTools.getNameWithoutPrefix(root.path, node.path);
             assertTrue(checker.validFolderName(folderName));
 
             for(FileGraph.Node children : node.children.values()) {
@@ -155,7 +155,7 @@ public class ModelCheckerTest {
     }
 
     private void testValidFolderStructureRec(FileGraph.Node node, List<String> folders) {
-        String folderName = FileTools.getFolderNameWithoutPrefix(graph.getRoot().path, node.path);
+        String folderName = FileTools.getNameWithoutPrefix(graph.getRoot().path, node.path);
         folders.add(folderName);
 
         if(!node.leaf) {

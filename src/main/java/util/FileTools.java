@@ -1,11 +1,8 @@
 package util;
 
-import parser.Configuration;
-
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -189,7 +186,7 @@ public class FileTools {
         return fileName.substring(fileName.lastIndexOf('.')+1);
     }
 
-    public static String getFolderNameWithoutPrefix(String prefix, String path) {
+    public static String getNameWithoutPrefix(String prefix, String path) {
         if(path == prefix) return "";
         return path.substring(path.lastIndexOf(File.separator)+1);
     }
