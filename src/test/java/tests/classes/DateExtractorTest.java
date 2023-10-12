@@ -54,8 +54,9 @@ public class DateExtractorTest {
     @Test
     public void defaultTest() {
         File mp4 = getResourceAsFile("example_files/video3.mp4");
-        LocalDateTime ldtLastModified = FileTools.dateTime(mp4.lastModified());
+        LocalDateTime ldtLastModified = FileTools.dateTime(mp4.lastModified()/1000*1000);
         LocalDateTime ldtCorrect = LocalDateTime.of(2021, 10, 15, 11, 24, 22);
+        assertEquals(ldtCorrect, ldtLastModified);
     }
 
     private File copy(String resource) {

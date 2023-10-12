@@ -6,3 +6,4 @@ ant-bin/*
 .idea/*
 .attach_pid*
 test-bin/
+target/
