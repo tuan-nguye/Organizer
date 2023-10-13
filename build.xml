@@ -32,6 +32,8 @@
         <javac srcdir="${src.dir}" destdir="${build.dir}">
             <classpath>
                 <pathelement path="lib/junit-platform-console-standalone-1.9.2.jar" />
+                <pathelement path="lib/metadata-extractor-2.18.0.jar" />
+                <pathelement path="lib/xmpcore-6.1.11.jar" />
             </classpath>
         </javac>
     </target>
