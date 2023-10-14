@@ -10,10 +10,13 @@
 
     <target name="buildJar" depends="compile">
         <manifest file="MANIFEST.MF">
-            <attribute name="Main-Class" value="Application"/>
+            <attribute name="Main-Class" value="com.org.Application"/>
             <attribute name="Class-Path" value="."/>
         </manifest>
-        <jar destfile="${build.dir}/${jarfileName}.jar" basedir="${build.dir}" includes="${build.dir}/**,${src.dir}/**" manifest="MANIFEST.MF"/>
+        <jar destfile="${build.dir}/${jarfileName}.jar" basedir="${build.dir}" includes="${build.dir}/**,${src.dir}/**" manifest="MANIFEST.MF">
+            <zipgroupfileset dir="lib" includes="*" />
+            <fileset dir="${build.dir}" excludes="tests/**" />
+        </jar>
     </target>
 
     <target name="clean">
@@ -31,9 +34,9 @@
     <target name="compile" depends="clean, makedir">
         <javac srcdir="${src.dir}" destdir="${build.dir}">
             <classpath>
-                <pathelement path="lib/junit-platform-console-standalone-1.9.2.jar" />
-                <pathelement path="lib/metadata-extractor-2.18.0.jar" />
-                <pathelement path="lib/xmpcore-6.1.11.jar" />
+                <fileset dir="lib">
+                    <include name="**/*.jar" />
+                </fileset>
             </classpath>
         </javac>
     </target>

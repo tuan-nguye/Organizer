@@ -2,8 +2,8 @@ package tests.classes;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import util.graph.FileGraph;
-import util.graph.FileGraphFactory;
+import com.org.util.graph.FileGraph;
+import com.org.util.graph.FileGraphFactory;
 
 import java.io.File;
 import java.nio.file.Path;

@@ -2,12 +2,12 @@ package tests.classes;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import organizer.ThresholdOrganizer;
-import organizer.copy.Copy;
-import parser.Configuration;
-import resources.GenerateExampleFiles;
-import resources.InitializeTestRepository;
-import util.FileTools;
+import com.org.organizer.ThresholdOrganizer;
+import com.org.organizer.copy.Copy;
+import com.org.parser.Configuration;
+import tests.resources.GenerateExampleFiles;
+import tests.resources.InitializeTestRepository;
+import com.org.util.FileTools;
 
 import java.io.File;
 import java.nio.file.Path;

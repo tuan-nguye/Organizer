@@ -2,17 +2,17 @@ package tests.classes;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import organizer.Organizer;
-import organizer.ThresholdOrganizer;
-import organizer.copy.Copy;
-import parser.Configuration;
-import resources.GenerateExampleFiles;
-import resources.InitializeTestRepository;
-import util.FileTools;
-import util.consistency.ModelChecker;
-import util.consistency.ModelError;
-import util.graph.FileGraph;
-import util.graph.FileGraphFactory;
+import com.org.organizer.Organizer;
+import com.org.organizer.ThresholdOrganizer;
+import com.org.organizer.copy.Copy;
+import com.org.parser.Configuration;
+import tests.resources.GenerateExampleFiles;
+import tests.resources.InitializeTestRepository;
+import com.org.util.FileTools;
+import com.org.util.consistency.ModelChecker;
+import com.org.util.consistency.ModelError;
+import com.org.util.graph.FileGraph;
+import com.org.util.graph.FileGraphFactory;
 
 import java.io.File;
 import java.io.IOException;

@@ -5,8 +5,8 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
 import org.junit.jupiter.api.Test;
-import util.FileTools;
-import util.time.DateExtractor;
+import com.org.util.FileTools;
+import com.org.util.time.DateExtractor;
 import java.io.*;
 import java.time.LocalDateTime;
 
