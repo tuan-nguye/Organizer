@@ -203,6 +203,7 @@ public class ModelFixerTest {
 
         checker.checkAll(true, true);
         errors = checker.getErrors();
+
         for(List<FileGraph.Node> errorList : errors.values()) {
             assertEquals(0, errorList.size());
         }
@@ -237,14 +238,7 @@ public class ModelFixerTest {
         for(List<FileGraph.Node> list : checker.getErrors().values()) {
             assertEquals(0, list.size());
         }
-    }
 
-    @Test
-    public void test() {
-        File folder2023 = new File(repoPath + File.separator + "2023");
-        folder2023.renameTo(new File(repoPath + File.separator + "2022"));
-        graph.update(graph.getRoot());
-        checker.checkAll(true, true);
-        fixer.fixStructure(checker.getErrors(), true, true);
+        resetRepo();
     }
 }

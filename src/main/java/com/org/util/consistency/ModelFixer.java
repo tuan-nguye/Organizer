@@ -85,8 +85,6 @@ public class ModelFixer {
                 path = getPathToNode(fn);
                 faultyFolders.removeAll(path);
                 System.out.printf("successfully restored structure:\n%s -> %s\n", original, fn.path);
-            } else {
-                faultyFolders.addAll(path);
             }
         }
 
@@ -108,15 +106,13 @@ public class ModelFixer {
         String folderName = DateTools.folderName(files[0], node.depth);
 
 
-        if(!leafFolder.getName().equals(folderName)) {
-            // check sibling nodes
-            if(path.size() >= 3 && !validateWithSiblings(path.get(path.size()-2), node, faultyFolders)) {
-                return false;
-            }
-
-            // attempt rename
-            if(!renameFolder(node, folderName)) return false;
+        // check sibling nodes
+        if(path.size() >= 3 && !validateWithSiblings(path.get(path.size()-2), node, faultyFolders)) {
+            return false;
         }
+
+        // attempt rename
+        if(!leafFolder.getName().equals(folderName) && !renameFolder(node, folderName)) return false;
 
         return true;
     }
@@ -129,13 +125,13 @@ public class ModelFixer {
             File currFolder = new File(currNode.path);
             String newFolderName = correctPreviousFolderName(nextNode.path);
 
-            if(!newFolderName.equals(currFolder.getName())) {
-                if(!validateWithSiblings(path.get(i-1), currNode, faultyFolders)) {
-                    return false;
-                }
 
-                if(!renameFolder(currNode, newFolderName)) return false;
+            if(!validateWithSiblings(path.get(i-1), currNode, faultyFolders)) {
+                return false;
             }
+
+            if(!newFolderName.equals(currFolder.getName()) && !renameFolder(currNode, newFolderName)) return false;
+
 
             nextNode = currNode;
         }
