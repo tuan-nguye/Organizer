@@ -11,7 +11,7 @@ public class InitializeTestRepository {
     public static void generateRepository(String repoPath, Configuration config, int threshold) {
         File testOut = new File(repoPath);
         if(!testOut.exists()) testOut.mkdirs();
-        Configuration.PROPERTY_FILE_PATH_STRING = repoPath;
+        config.PROPERTY_FILE_PATH_STRING = repoPath;
         Command initRepo = new InitializeRepository();
 
         try {

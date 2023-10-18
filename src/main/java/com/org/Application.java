@@ -12,7 +12,7 @@ import java.util.Map;
 public class Application {
     public static void main(String[] args) {
         Configuration configuration = new Configuration();
-        Configuration.PROPERTY_FILE_PATH_STRING = System.getProperty("user.dir");
+        configuration.PROPERTY_FILE_PATH_STRING = System.getProperty("user.dir");
         Map<String, Command> commandMap = configuration.allCommands();
 
         CommandLineParser parser = new CommandLineParser();

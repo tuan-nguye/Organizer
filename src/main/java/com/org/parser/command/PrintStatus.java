@@ -17,7 +17,7 @@ public class PrintStatus extends Command {
 
     @Override
     public void executeCommand(String[] args, Configuration config) {
-        if(!Checker.validRepository(Configuration.PROPERTY_FILE_PATH_STRING)) {
+        if(!Checker.validRepository(config.PROPERTY_FILE_PATH_STRING)) {
             System.out.println("not an org.organizer repository");
             return;
         } else {

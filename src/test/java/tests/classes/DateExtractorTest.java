@@ -65,4 +65,18 @@ public class DateExtractorTest {
         LocalDateTime ldtLastModified = DateExtractor.getDate(txt);
         assertEquals(ldtCorrect, ldtLastModified);
     }
+
+    @Test
+    public void testNull() {
+        File corruptJpg = new File("test-bin", "image.jpg");
+
+        try {
+            corruptJpg.createNewFile();
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        LocalDateTime ldt = DateExtractor.getDate(corruptJpg);
+        assertNull(ldt);
+    }
 }

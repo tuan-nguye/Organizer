@@ -16,7 +16,7 @@ public class RepairCommand extends Command {
 
     @Override
     public void validateConfiguration(String[] args, Configuration config) throws CommandException {
-        if(!Checker.validRepository(Configuration.PROPERTY_FILE_PATH_STRING)) {
+        if(!Checker.validRepository(config.PROPERTY_FILE_PATH_STRING)) {
             throw new CommandException("can't repair uninitialized repository");
         }
 

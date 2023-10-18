@@ -24,14 +24,14 @@ public class OrganizeFiles extends Command {
             throw new CommandException("invalid number of arguments, needs 1");
         } // check if source and destination exist, destination is valid repo
 
-        if(!Checker.validRepository(Configuration.PROPERTY_FILE_PATH_STRING)) {
-            throw new CommandException(Configuration.PROPERTY_FILE_PATH_STRING + " is not a repository");
+        if(!Checker.validRepository(config.PROPERTY_FILE_PATH_STRING)) {
+            throw new CommandException(config.PROPERTY_FILE_PATH_STRING + " is not a repository");
         }
     }
 
     @Override
     public void executeCommand(String[] args, Configuration config) {
-        String source = args[0], destination = Configuration.PROPERTY_FILE_PATH_STRING;
+        String source = args[0], destination = config.PROPERTY_FILE_PATH_STRING;
         System.out.printf("copying files %s -> %s\n", source, destination);
 
         Map<String, Option> optionMap = config.allOptions();

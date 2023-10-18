@@ -34,6 +34,7 @@ public class ThresholdOrganizer extends Organizer {
             incrementCounter();
             notifyObservers();
         } else {
+            if(file.getAbsolutePath().equals(errorFolderPath)) return;
             for(File child : file.listFiles()) {
                 dfs(child);
             }
@@ -44,8 +45,17 @@ public class ThresholdOrganizer extends Organizer {
         if(!f.exists()) return false;
         if(f.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) return false;
         LocalDateTime dateTime = DateExtractor.getDate(f);
-        FileGraph.Node node = getDirectory(dateTime);
-        Path path = Path.of(node.path);
+
+        Path path;
+        FileGraph.Node node;
+        if(dateTime != null) {
+            node = getDirectory(dateTime);
+            path = Path.of(node.path);
+        } else {
+            node = errorNode;
+            path = Path.of(this.errorFolderPath);
+        }
+
         if(path == null) return false;
 
         try {
@@ -73,14 +83,23 @@ public class ThresholdOrganizer extends Organizer {
      * @param node
      */
     public void reorganize(FileGraph.Node node) {
-        if(node.fileCount <= threshold) return;
+        if(node.fileCount <= threshold || node == errorNode) return;
         node.leaf = false;
         File directory = new File(node.path);
 
         for(File file : directory.listFiles(a -> a.isFile())) {
             if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
-            FileGraph.Node nextNode = getDirectory(DateExtractor.getDate(file));
-            Path path = Path.of(nextNode.path);
+            LocalDateTime ldt = DateExtractor.getDate(file);
+            FileGraph.Node nextNode;
+            Path path;
+
+            if(ldt != null) {
+                nextNode = getDirectory(ldt);
+                path = Path.of(nextNode.path);
+            } else {
+                nextNode = errorNode;
+                path = Path.of(errorFolderPath);
+            }
 
             try {
                 move.execute(file.toPath(), path.resolve(file.getName()));

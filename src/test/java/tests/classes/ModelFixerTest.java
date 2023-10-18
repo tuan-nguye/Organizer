@@ -63,6 +63,7 @@ public class ModelFixerTest {
         Organizer organizer = new ThresholdOrganizer(new Copy(), threshold, repoPath);
         organizer.allowFileExtension("txt");
         organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath);
+        graph.update(graph.getRoot());
     }
 
     /**
@@ -238,6 +239,30 @@ public class ModelFixerTest {
         for(List<FileGraph.Node> list : checker.getErrors().values()) {
             assertEquals(0, list.size());
         }
+
+        resetRepo();
+    }
+
+    @Test
+    public void moveToErrorFolder() {
+        File corruptJpgNonLeaf = new File(repoPath + File.separator + "2023", "image.jpg");
+        File corruptJpgLeaf = new File(repoPath + File.separator + "2010", "image2.jpg");
+
+        try {
+            corruptJpgNonLeaf.createNewFile();
+            corruptJpgLeaf.createNewFile();
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        graph.update(graph.getRoot());
+        checker.checkAll(true, true);
+        fixer.fixStructure(checker.getErrors(), true, true);
+
+        File jpgCorrectLocation = new File(repoPath + File.separator + "error", "image.jpg");
+        File jpg2CorrectLocation = new File(repoPath + File.separator + "error", "image2.jpg");
+        assertTrue(jpgCorrectLocation.exists());
+        assertTrue(jpg2CorrectLocation.exists());
 
         resetRepo();
     }

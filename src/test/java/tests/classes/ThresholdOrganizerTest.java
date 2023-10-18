@@ -12,6 +12,7 @@ import com.org.util.FileTools;
 import java.io.File;
 import java.nio.file.Path;
 
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -54,5 +55,24 @@ public class ThresholdOrganizerTest {
         organizer.allowFileExtension("txt");
         organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath+File.separator+"csv");
         assertEquals(0, FileTools.count(new File(repoPath), (dir, name) -> name.contains("csv")));
+    }
+
+    @Test
+    public void copyCorruptFileTest() {
+        File corruptJpg = new File("test-bin", "image.jpg");
+
+        if(!corruptJpg.exists()) {
+            try {
+                corruptJpg.createNewFile();
+            } catch(Exception e) {
+                fail(e.getMessage());
+            }
+        }
+
+        organizer.allowFileExtension("jpg");
+        organizer.copyAndOrganize(corruptJpg.getAbsolutePath());
+
+        File jpgCorrectFolder = new File(repoPath + File.separator + Configuration.ERROR_FOLDER_NAME, "image.jpg");
+        assertTrue(jpgCorrectFolder.exists());
     }
 }

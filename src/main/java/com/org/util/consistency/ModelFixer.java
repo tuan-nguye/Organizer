@@ -14,6 +14,7 @@ import com.org.util.time.DateTools;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -21,11 +22,14 @@ public class ModelFixer {
     private FileGraph fileGraph;
     private ModelChecker checker;
     private int threshold;
+    private FileGraph.Node errorNode;
 
     public ModelFixer(Configuration config) {
-        fileGraph = FileGraphFactory.get(Configuration.PROPERTY_FILE_PATH_STRING);
+        fileGraph = FileGraphFactory.get(config.PROPERTY_FILE_PATH_STRING);
         checker = new ModelChecker(config);
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
+        FileGraph.Node root = fileGraph.getRoot();
+        errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
     }
 
     public void fixStructure(Map<ModelError, List<FileGraph.Node>> errors, boolean fixFiles, boolean fixFolders) {
@@ -172,7 +176,9 @@ public class ModelFixer {
 
         if(files == null || files.length == 0) return false;
 
-        DateIterator di = new DateIterator(DateExtractor.getDate(files[0]));
+        LocalDateTime ldt = DateExtractor.getDate(files[0]);
+        if(ldt == null) return false;
+        DateIterator di = new DateIterator(ldt);
         boolean first = true;
         for(int i = 0; i < node.depth; i++) {
             if(first) first = false;
@@ -268,7 +274,9 @@ public class ModelFixer {
     }
 
     private boolean correctFolder(String folderName, File f) {
-        DateIterator it = new DateIterator(DateExtractor.getDate(f));
+        LocalDateTime ldt = DateExtractor.getDate(f);
+        if(ldt == null) return false;
+        DateIterator it = new DateIterator(ldt);
         String[] folderSplit = folderName.split("_");
 
         for(int i = 0; i < folderSplit.length; i++) {
@@ -286,8 +294,14 @@ public class ModelFixer {
 
         for(File file : folder.listFiles(f -> f.isFile())) {
             if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
-            FileGraph.Node correctNode = fileGraph.getNode(DateExtractor.getDate(file));
+            LocalDateTime ldt = DateExtractor.getDate(file);
+            FileGraph.Node correctNode;
+
+            if(ldt != null) correctNode = fileGraph.getNode(ldt);
+            else correctNode = errorNode;
+
             File correctFolder = new File(correctNode.path);
+
             if(!correctFolder.exists()) correctFolder.mkdir();
             Path from = file.toPath(), to = Path.of(correctNode.path, file.getName());
             if(from.equals(to)) continue;

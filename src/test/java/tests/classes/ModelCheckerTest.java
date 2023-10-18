@@ -28,6 +28,7 @@ public class ModelCheckerTest {
     private static FileGraph graph;
     private static ModelChecker checker;
     private static int threshold = 1;
+    private static FileGraph.Node errorNode;
 
     /**
      * "test-bin/repo/2010/test2.txt",
@@ -48,6 +49,8 @@ public class ModelCheckerTest {
 
         graph = FileGraphFactory.get(repoPath);
         checker = new ModelChecker(config);
+        FileGraph.Node root = graph.getRoot();
+        errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
     }
 
     @Test
@@ -140,6 +143,7 @@ public class ModelCheckerTest {
 
         while(!stack.isEmpty()) {
             FileGraph.Node node = stack.pop();
+            if(node == errorNode) continue;
             String folderName = FileTools.getNameWithoutPrefix(root.path, node.path);
             assertTrue(checker.validFolderName(folderName));
 
@@ -155,6 +159,7 @@ public class ModelCheckerTest {
     }
 
     private void testValidFolderStructureRec(FileGraph.Node node, List<String> folders) {
+        if(node == errorNode) return;
         String folderName = FileTools.getNameWithoutPrefix(graph.getRoot().path, node.path);
         folders.add(folderName);
 

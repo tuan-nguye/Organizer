@@ -13,9 +13,12 @@ import java.util.*;
 
 public class Configuration {
     /* file where properties are stored */
+    // name of the property file
     public static String PROPERTY_FILE_NAME_STRING = ".organizer_config.txt";
-    public static String PROPERTY_FILE_PATH_STRING = "";
+    public static String ERROR_FOLDER_NAME = "error";
 
+    // path to the repository and to the error folder
+    public String PROPERTY_FILE_PATH_STRING = "";
 
     Set<String> propertyNames = new HashSet<>(Arrays.asList("folderSize"));
 

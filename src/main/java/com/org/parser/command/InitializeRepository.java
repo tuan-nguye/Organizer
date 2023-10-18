@@ -17,7 +17,7 @@ public class InitializeRepository extends Command {
             throw new CommandException("too many arguments, needs 0 or 1");
         }
 
-        File propertiesFile = new File(Configuration.PROPERTY_FILE_PATH_STRING, Configuration.PROPERTY_FILE_NAME_STRING);
+        File propertiesFile = new File(config.PROPERTY_FILE_PATH_STRING, Configuration.PROPERTY_FILE_NAME_STRING);
 
         if(propertiesFile.exists()) {
             throw new CommandException("repository already initialized");
@@ -33,20 +33,24 @@ public class InitializeRepository extends Command {
         }
 
         String fullPath = Configuration.PROPERTY_FILE_NAME_STRING;
-        if(!Configuration.PROPERTY_FILE_PATH_STRING.isEmpty()) fullPath = Configuration.PROPERTY_FILE_PATH_STRING + File.separator + fullPath;
+        if(!config.PROPERTY_FILE_PATH_STRING.isEmpty()) fullPath = config.PROPERTY_FILE_PATH_STRING + File.separator + fullPath;
         System.out.println("initializing repo with size=" + folderSize + "...");
         File propertiesFile = new File(fullPath);
+        File errorFolder = new File(config.PROPERTY_FILE_PATH_STRING + File.separator + Configuration.ERROR_FOLDER_NAME);
 
         try {
             if(!propertiesFile.createNewFile()) {
                 System.err.println("file already exists, should never come here");
             }
             FileTools.setFileVisibility(propertiesFile, true);
+            errorFolder.mkdir();
         } catch(IOException ioe) {
             System.err.println("ioexception when creating properties file");
         }
 
         properties.put("folderSize", String.valueOf(folderSize));
         FileTools.storeProperties(properties, fullPath);
+
+        System.out.println("repo created successfully");
     }
 }

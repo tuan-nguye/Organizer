@@ -9,6 +9,7 @@ import com.org.util.time.DateIterator;
 import com.org.util.time.DateStats;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,11 +21,14 @@ public class ModelChecker {
     private int threshold;
     // saved errors after check
     private Map<ModelError, List<FileGraph.Node>> errors = new HashMap<>();
+    private FileGraph.Node errorNode;
 
     public ModelChecker(Configuration config) {
-        this.graph = FileGraphFactory.get(Configuration.PROPERTY_FILE_PATH_STRING);
+        this.graph = FileGraphFactory.get(config.PROPERTY_FILE_PATH_STRING);
         this.config = config;
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
+        FileGraph.Node root = graph.getRoot();
+        errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
     }
 
     // function that dfs through all files and folders and saves errors
@@ -54,6 +58,7 @@ public class ModelChecker {
      * @return returns the sum of files in child nodes
      */
     private int checkAllDfs(FileGraph.Node node, List<String> path) {
+        if(node == errorNode) return 0;
         // add folder name to path
         String folderName = FileTools.getNameWithoutPrefix(graph.getRoot().path, node.path);
         path.add(folderName);
@@ -98,7 +103,9 @@ public class ModelChecker {
     public boolean correctFolder(FileGraph.Node parentNode, File file) {
         if(parentNode == graph.getRoot()) return true;
 
-        DateIterator it = new DateIterator(DateExtractor.getDate(file));
+        LocalDateTime ldt = DateExtractor.getDate(file);
+        if(ldt == null) return false;
+        DateIterator it = new DateIterator(ldt);
         String folderName = FileTools.getNameWithoutPrefix(graph.getRoot().path, parentNode.path);
         String[] folderSplit = folderName.split("_");
         if(parentNode.depth != folderSplit.length) return false;

@@ -20,14 +20,22 @@ public class DateExtractor {
         extractorMap.put("jpeg", fi);
         extractorMap.put("mp4", new Mp4Format());
     }
-     public static LocalDateTime getDate(File file) {
-         if(!file.exists() || !file.isFile()) return null;
-         String fileType = FileTools.getFileExtension(file);
-         LocalDateTime ldt = null;
 
-         if(extractorMap.containsKey(fileType)) ldt = extractorMap.get(fileType).readDate(file);
-         if(ldt == null) ldt = FileTools.dateTime(file.lastModified());
+    /**
+     * read the date from a file, if it's a jpg or mp4 file with date metadata
+     * return this value. otherwise return the last modified date
+     * @param file
+     * @return the date associated to the file or last modified, can return
+     * null if an error occurred, e.g. corrupt jpg file
+     */
+    public static LocalDateTime getDate(File file) {
+     if(!file.exists() || !file.isFile()) return null;
+     String fileType = FileTools.getFileExtension(file);
+     LocalDateTime ldt = null;
 
-         return ldt;
-     }
+     if(extractorMap.containsKey(fileType)) ldt = extractorMap.get(fileType).readDate(file);
+     else ldt = FileTools.dateTime(file.lastModified());
+
+     return ldt;
+    }
 }
