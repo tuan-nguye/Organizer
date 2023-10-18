@@ -124,12 +124,12 @@ public class ModelFixerTest {
         }
 
         graph.update(graph.getRoot());
-        checker.checkAll(true, true);
+        checker.checkAll();
         Map<ModelError, List<FileGraph.Node>> errors = checker.getErrors();
 
         // fix structure and check if everything is correct
-        fixer.fixStructure(errors, true, true); // reorganizing messes up files
-        checker.checkAll(true, true);
+        fixer.fixStructure(errors); // reorganizing messes up files
+        checker.checkAll();
 
         errors = checker.getErrors();
         for(Map.Entry<ModelError, List<FileGraph.Node>> e : errors.entrySet()) {
@@ -197,12 +197,12 @@ public class ModelFixerTest {
         }
         graph.update(graph.getRoot());
 
-        checker.checkAll(true, true);
+        checker.checkAll();
         Map<ModelError, List<FileGraph.Node>> errors = checker.getErrors();
         assertEquals(3, errors.get(ModelError.INVALID_FOLDER_STRUCTURE).size());
-        fixer.fixStructure(errors, true, true);
+        fixer.fixStructure(errors);
 
-        checker.checkAll(true, true);
+        checker.checkAll();
         errors = checker.getErrors();
 
         for(List<FileGraph.Node> errorList : errors.values()) {
@@ -233,8 +233,8 @@ public class ModelFixerTest {
         ldt = LocalDateTime.of(2023, 2, 1, 0, 0);
         errors.get(ModelError.FOLDER_ABOVE_THRESHOLD).add(graph.getNode(ldt));
 
-        fixer.fixStructure(errors, true, true);
-        checker.checkAll(true, true);
+        fixer.fixStructure(errors);
+        checker.checkAll();
 
         for(List<FileGraph.Node> list : checker.getErrors().values()) {
             assertEquals(0, list.size());
@@ -256,8 +256,8 @@ public class ModelFixerTest {
         }
 
         graph.update(graph.getRoot());
-        checker.checkAll(true, true);
-        fixer.fixStructure(checker.getErrors(), true, true);
+        checker.checkAll();
+        fixer.fixStructure(checker.getErrors());
 
         File jpgCorrectLocation = new File(repoPath + File.separator + "error", "image.jpg");
         File jpg2CorrectLocation = new File(repoPath + File.separator + "error", "image2.jpg");

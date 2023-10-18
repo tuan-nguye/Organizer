@@ -183,7 +183,7 @@ public class ModelCheckerTest {
 
     @Test
     public void checkAllCorrect() {
-        checker.checkAll(true, true);
+        checker.checkAll();
         String out = "";
         for(Map.Entry<ModelError, List<FileGraph.Node>> e : checker.getErrors().entrySet()) {
             if(!e.getValue().isEmpty()) out += e + "\n";
@@ -240,7 +240,7 @@ public class ModelCheckerTest {
         }
 
         graph.update(graph.getRoot());
-        checker.checkAll(true, true);
+        checker.checkAll();
 
         // check if all errors have been found
         Map<ModelError, List<FileGraph.Node>> errors = checker.getErrors();
@@ -281,7 +281,7 @@ public class ModelCheckerTest {
         }
 
         graph.update(graph.getRoot());
-        checker.checkAll(true, true);
+        checker.checkAll();
 
         int numErr = 0;
         for(Map.Entry<ModelError, List<FileGraph.Node>> e : checker.getErrors().entrySet()) {

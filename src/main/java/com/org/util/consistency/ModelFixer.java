@@ -32,18 +32,11 @@ public class ModelFixer {
         errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
     }
 
-    public void fixStructure(Map<ModelError, List<FileGraph.Node>> errors, boolean fixFiles, boolean fixFolders) {
-        if(!fixFiles && !fixFolders) return;
+    public void fixStructure(Map<ModelError, List<FileGraph.Node>> errors) {
         //fileGraph.update(fileGraph.getRoot());
         // fix structure by attempting to restore the original folder name
-        Set<FileGraph.Node> unrestorableFolders;
-        if(fixFolders) {
-            unrestorableFolders = fixFolders(errors);
-        } else {
-            unrestorableFolders = new HashSet<>(errors.get(ModelError.INVALID_FOLDER_STRUCTURE));
-            unrestorableFolders.addAll(errors.get(ModelError.INVALID_FOLDER_NAME));
-            unrestorableFolders.addAll(errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES));
-        }
+        Set<FileGraph.Node> unrestorableFolders = fixFolders(errors);
+
         // union of invalid folder name, above threshold, and files in non leaf folder
         // move all of them to (tmp directory/directly into structure)
         unrestorableFolders.addAll(errors.get(ModelError.FILES_IN_NON_LEAF));

@@ -21,7 +21,7 @@ public class CheckCommand extends Command {
     @Override
     public void executeCommand(String[] args, Configuration config) {
         ModelChecker checker = new ModelChecker(config);
-        checker.checkAll(true, true);
+        checker.checkAll();
         Map<ModelError, List<FileGraph.Node>> errors = checker.getErrors();
         int maxLength = 0;
 

@@ -38,14 +38,10 @@ public class ModelChecker {
      * iterate through the filegraph recursively
      * reduces redundant errors, so if a folder has an error all its
      * files also have errors by default
-     * @param chkFiles true if files should be checked, costs more time
-     * @param chkFolders true if folders should be checked
      */
-    public void checkAll(boolean chkFiles, boolean chkFolders) {
-        if(!chkFiles && !chkFolders) return;
+    public void checkAll() {
         errors.clear();
         for(ModelError me : ModelError.values()) errors.put(me, new ArrayList<>());
-        //graph.update(graph.getRoot());
         checkAllDfs(graph.getRoot(), new ArrayList<>());
     }
 

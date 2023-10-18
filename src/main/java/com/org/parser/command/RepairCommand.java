@@ -21,7 +21,7 @@ public class RepairCommand extends Command {
         }
 
         ModelChecker checker = new ModelChecker(config);
-        checker.checkAll(true, true);
+        checker.checkAll();
         errors = checker.getErrors();
         int sum = 0;
         for(List<FileGraph.Node> ers : errors.values()) {
@@ -34,6 +34,6 @@ public class RepairCommand extends Command {
     @Override
     public void executeCommand(String[] args, Configuration config) {
         ModelFixer fixer = new ModelFixer(config);
-        fixer.fixStructure(errors, true, true);
+        fixer.fixStructure(errors);
     }
 }
