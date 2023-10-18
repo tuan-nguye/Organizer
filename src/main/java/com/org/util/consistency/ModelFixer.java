@@ -33,43 +33,14 @@ public class ModelFixer {
     }
 
     public void fixStructure(Map<ModelError, List<FileGraph.Node>> errors) {
-        //fileGraph.update(fileGraph.getRoot());
-        // fix structure by attempting to restore the original folder name
         Set<FileGraph.Node> unrestorableFolders = fixFolders(errors);
-
-        // union of invalid folder name, above threshold, and files in non leaf folder
-        // move all of them to (tmp directory/directly into structure)
-        unrestorableFolders.addAll(errors.get(ModelError.FILES_IN_NON_LEAF));
-        Set<FileGraph.Node> foldersAboveThreshold = new HashSet<>();
-        for(FileGraph.Node invalidFolder : unrestorableFolders) {
-            copyFilesToCorrectLocation(invalidFolder, foldersAboveThreshold);
-            if(invalidFolder.leaf) invalidFolder.fileCount = FileTools.countDirectFiles(new File(invalidFolder.path));
-            else invalidFolder.fileCount = 0;
-        }
-        ThresholdOrganizer org = new ThresholdOrganizer(new Move(), threshold, fileGraph.getRoot().path);
-        foldersAboveThreshold.addAll(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD));
-        for(FileGraph.Node folder : foldersAboveThreshold) {
-            if(folder.fileCount > threshold) org.reorganize(folder);
-        }
+        fixFiles(errors, unrestorableFolders);
         reduceStructure();
     }
 
     private Set<FileGraph.Node> fixFolders(Map<ModelError, List<FileGraph.Node>> errors) {
-        // put all faulty folders in one set
-        Set<FileGraph.Node> faultyFolders = new HashSet<>();
-        for(FileGraph.Node fn : errors.get(ModelError.INVALID_FOLDER_STRUCTURE)) {
-            List<FileGraph.Node> path = getPathToNode(fn);
-            faultyFolders.addAll(path);
-        }
-
-        faultyFolders.addAll(errors.get(ModelError.INVALID_FOLDER_NAME));
-        faultyFolders.addAll(errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES));
-
-        // restore
-        Set<FileGraph.Node> toRestore = new HashSet<>();
-        toRestore.addAll(errors.get(ModelError.INVALID_FOLDER_STRUCTURE));
-        toRestore.addAll(errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES));
-        for(FileGraph.Node fn : errors.get(ModelError.INVALID_FOLDER_NAME)) if(fn.leaf) toRestore.add(fn);
+        Set<FileGraph.Node> faultyFolders = getFaultyFolders(errors);
+        Set<FileGraph.Node> toRestore = getRestorableFolders(errors);
 
         for(FileGraph.Node fn : toRestore) {
             String original = fn.path;
@@ -88,7 +59,29 @@ public class ModelFixer {
         return faultyFolders;
     }
 
-    public boolean restoreFolder(FileGraph.Node node, List<FileGraph.Node> path, Set<FileGraph.Node> faultyFolders) {
+    private Set<FileGraph.Node> getFaultyFolders(Map<ModelError, List<FileGraph.Node>> errors) {
+        Set<FileGraph.Node> faultyFolders = new HashSet<>();
+        for(FileGraph.Node fn : errors.get(ModelError.INVALID_FOLDER_STRUCTURE)) {
+            List<FileGraph.Node> path = getPathToNode(fn);
+            faultyFolders.addAll(path);
+        }
+
+        faultyFolders.addAll(errors.get(ModelError.INVALID_FOLDER_NAME));
+        faultyFolders.addAll(errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES));
+
+        return faultyFolders;
+    }
+
+    private Set<FileGraph.Node> getRestorableFolders(Map<ModelError, List<FileGraph.Node>> errors) {
+        Set<FileGraph.Node> toRestore = new HashSet<>();
+        toRestore.addAll(errors.get(ModelError.INVALID_FOLDER_STRUCTURE));
+        toRestore.addAll(errors.get(ModelError.FOLDER_CONTAINS_INCONSISTENT_DATES));
+        for(FileGraph.Node fn : errors.get(ModelError.INVALID_FOLDER_NAME)) if(fn.leaf) toRestore.add(fn);
+
+        return toRestore;
+    }
+
+    private boolean restoreFolder(FileGraph.Node node, List<FileGraph.Node> path, Set<FileGraph.Node> faultyFolders) {
         if(!restoreLeafFolder(node, path, faultyFolders)) return false;
         if(!restoreInnerFolders(node, path, faultyFolders)) return false;
         return true;
@@ -279,6 +272,22 @@ public class ModelFixer {
         }
 
         return true;
+    }
+
+    private void fixFiles(Map<ModelError, List<FileGraph.Node>> errors, Set<FileGraph.Node> unrestorableFolders) {
+        // union of invalid folder name, above threshold, and files in non leaf folder
+        unrestorableFolders.addAll(errors.get(ModelError.FILES_IN_NON_LEAF));
+        Set<FileGraph.Node> foldersAboveThreshold = new HashSet<>();
+        for(FileGraph.Node invalidFolder : unrestorableFolders) {
+            copyFilesToCorrectLocation(invalidFolder, foldersAboveThreshold);
+            if(invalidFolder.leaf) invalidFolder.fileCount = FileTools.countDirectFiles(new File(invalidFolder.path));
+            else invalidFolder.fileCount = 0;
+        }
+        ThresholdOrganizer org = new ThresholdOrganizer(new Move(), threshold, fileGraph.getRoot().path);
+        foldersAboveThreshold.addAll(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD));
+        for(FileGraph.Node folder : foldersAboveThreshold) {
+            if(folder.fileCount > threshold) org.reorganize(folder);
+        }
     }
 
     private void copyFilesToCorrectLocation(FileGraph.Node folderNode, Set<FileGraph.Node> foldersAboveThreshold) {
