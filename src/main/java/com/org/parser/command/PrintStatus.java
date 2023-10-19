@@ -18,10 +18,10 @@ public class PrintStatus extends Command {
     @Override
     public void executeCommand(String[] args, Configuration config) {
         if(!Checker.validRepository(config.PROPERTY_FILE_PATH_STRING)) {
-            System.out.println("not an org.organizer repository");
+            System.out.println("not an organizer repository");
             return;
         } else {
-            System.out.println("org.organizer repository initialized\n");
+            System.out.println("organizer repository initialized\n");
         }
 
         Properties properties = config.getProperties();

@@ -31,7 +31,7 @@ public class Configuration {
             .setCommandFormat("organize /path/to/source");
     Command initCommand = new InitializeRepository()
             .setName("init")
-            .setDescription("initialize org.organizer destination directory, default folder size is 500")
+            .setDescription("initialize organizer destination directory, default folder size is 500")
             .setCommandFormat("init [folderSize]");
     Command statusCommand = new PrintStatus()
             .setName("status")
@@ -43,7 +43,7 @@ public class Configuration {
 
     Command versionCommand = new PrintVersion()
             .setName("version")
-            .setDescription("org.organizer version 0.1");
+            .setDescription("organizer version 0.1");
 
     Command setPropertyCommand = new SetProperty()
             .setName("setProperty")
