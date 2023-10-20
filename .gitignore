@@ -7,4 +7,5 @@ ant-bin/*
 .attach_pid*
 test-bin/
 target/
+
 MANIFEST.MF
