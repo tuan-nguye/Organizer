@@ -38,10 +38,13 @@ public class OrganizeFiles extends Command {
 
         ValueOption extOption = (ValueOption) optionMap.get("fileExtensions");
         final Set<String> extensions = new HashSet<>();
+        System.out.println(optionMap);
+        System.out.println("extOption.enabled(): " + extOption.isEnabled());
 
         FilenameFilter filter = null;
         if(extOption.isEnabled()) {
             extensions.addAll(extOption.getValues());
+            System.out.println(extOption.getValues());
             filter = (dir, name) -> extensions.contains(FileTools.getFileExtension(name));
         }
 

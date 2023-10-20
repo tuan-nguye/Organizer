@@ -40,7 +40,9 @@ public class ValueOption extends Option {
     public void parseArguments(String input) throws ParseException {
         int idxAssign = input.indexOf('=');
         if(idxAssign == -1) throw new IllegalArgumentException("invalid input for value option");
-        String[] args = input.substring(idxAssign+1).split(",");
+        input = input.substring(idxAssign+1);
+        if(input.isEmpty()) throw new IllegalArgumentException("no values given for value option");
+        String[] args = input.split(",");
 
         for(int i = 0; i < args.length; i++) {
             if(!allowAll && !acceptedValues.contains(args[i])) {
@@ -52,6 +54,8 @@ public class ValueOption extends Option {
             }
             values.add(args[i]);
         }
+
+        enabled = true;
     }
 
     public List<String> getValues() {

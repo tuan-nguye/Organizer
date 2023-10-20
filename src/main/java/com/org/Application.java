@@ -23,8 +23,8 @@ public class Application {
         // parse the arguments from the command line
         try {
             parsedArgs = parser.parse(args);
-        } catch(ParseException pe) {
-            System.err.println(pe.getMessage());
+        } catch(Exception e) {
+            System.err.println(e.getMessage());
             System.exit(1);
         }
 
