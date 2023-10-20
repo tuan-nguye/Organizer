@@ -18,6 +18,7 @@ public class Mp4Format implements FormatInterface {
         try {
             Metadata md = ImageMetadataReader.readMetadata(file);
             Mp4Directory directory = md.getFirstDirectoryOfType(Mp4Directory.class);
+            if(directory == null) throw new Exception("no mp4 metadata");
             Date date = directory.getDate(Mp4Directory.TAG_CREATION_TIME, TimeZone.getDefault());
             if(date == null) date = directory.getDate(Mp4Directory.TAG_MODIFICATION_TIME, TimeZone.getDefault());
             if(date != null) ldt = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());

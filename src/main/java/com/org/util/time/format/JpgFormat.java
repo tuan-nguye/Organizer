@@ -18,6 +18,7 @@ public class JpgFormat implements FormatInterface {
         try {
             Metadata md = ImageMetadataReader.readMetadata(file);
             ExifSubIFDDirectory directory = md.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+            if(directory == null) throw new Exception("no jpg metadata");
             Date date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, TimeZone.getDefault());
             if(date == null) date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME, TimeZone.getDefault());
             if(date == null) date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_DIGITIZED, TimeZone.getDefault());

@@ -69,7 +69,8 @@ public class OrganizeFiles extends Command {
         int folderSize = Integer.parseInt(config.getProperties().getProperty("folderSize"));
         Organizer thresholdOrganizer = new ThresholdOrganizer(copyOperation, folderSize, destination);
 
-        for(String ext : extensions) thresholdOrganizer.fileExtensionAllowed(ext);
+        for(String ext : extensions) thresholdOrganizer.allowFileExtension(ext);
+        System.out.println(extensions);
 
         bar.setSubject(thresholdOrganizer);
         thresholdOrganizer.register(bar);
