@@ -20,13 +20,11 @@ import java.util.regex.Pattern;
 
 public class ModelFixer {
     private FileGraph fileGraph;
-    private ModelChecker checker;
     private int threshold;
     private FileGraph.Node errorNode;
 
     public ModelFixer(Configuration config) {
         fileGraph = FileGraphFactory.get(config.PROPERTY_FILE_PATH_STRING);
-        checker = new ModelChecker(config);
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
         FileGraph.Node root = fileGraph.getRoot();
         errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
@@ -331,6 +329,8 @@ public class ModelFixer {
     }
 
     private void reduceStructure(FileGraph.Node node) {
+        if(node == errorNode) return;
+
         if(node.leaf) {
             // nothing to do
         } else {
@@ -340,6 +340,7 @@ public class ModelFixer {
             Set<Map.Entry<String, FileGraph.Node>> entries = new HashSet<>(node.children.entrySet());
             for(Map.Entry<String, FileGraph.Node> e : entries) {
                 FileGraph.Node child = e.getValue();
+                if(child == errorNode) continue;
                 reduceStructure(child);
                 numFiles += child.fileCount;
                 allLeaves &= child.leaf;
@@ -347,7 +348,7 @@ public class ModelFixer {
                     String key = e.getKey();
                     node.children.remove(key);
                     File emptyChild = new File(child.path);
-                    if(!emptyChild.delete()) throw new IllegalStateException("couldnt delete empty child: " + child.path);
+                    if(!emptyChild.delete()) throw new IllegalStateException("couldnt delete empty child: " + child + ", " + errorNode);
                 }
             }
 

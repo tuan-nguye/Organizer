@@ -64,6 +64,8 @@ public class ModelFixerTest {
         organizer.allowFileExtension("txt");
         organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath);
         graph.update(graph.getRoot());
+        fixer = new ModelFixer(config);
+        checker = new ModelChecker(config);
     }
 
     /**

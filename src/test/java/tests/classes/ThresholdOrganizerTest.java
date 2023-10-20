@@ -74,5 +74,6 @@ public class ThresholdOrganizerTest {
 
         File jpgCorrectFolder = new File(repoPath + File.separator + Configuration.ERROR_FOLDER_NAME, "image.jpg");
         assertTrue(jpgCorrectFolder.exists());
+        jpgCorrectFolder.delete();
     }
 }

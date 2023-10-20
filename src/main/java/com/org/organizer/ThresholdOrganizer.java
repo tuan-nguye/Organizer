@@ -46,15 +46,8 @@ public class ThresholdOrganizer extends Organizer {
         if(f.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) return false;
         LocalDateTime dateTime = DateExtractor.getDate(f);
 
-        Path path;
-        FileGraph.Node node;
-        if(dateTime != null) {
-            node = getDirectory(dateTime);
-            path = Path.of(node.path);
-        } else {
-            node = errorNode;
-            path = Path.of(this.errorFolderPath);
-        }
+        FileGraph.Node node = getDirectory(dateTime);
+        Path path = Path.of(node.path);
 
         if(path == null) return false;
 
@@ -71,7 +64,9 @@ public class ThresholdOrganizer extends Organizer {
     }
 
     protected FileGraph.Node getDirectory(LocalDateTime dateTime) {
-        FileGraph.Node node = fileGraph.getNode(dateTime);
+        FileGraph.Node node;
+        if(dateTime == null) node = errorNode;
+        else node = fileGraph.getNode(dateTime);
         new File(node.path).mkdir();
         return node;
     }
@@ -90,16 +85,8 @@ public class ThresholdOrganizer extends Organizer {
         for(File file : directory.listFiles(a -> a.isFile())) {
             if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
             LocalDateTime ldt = DateExtractor.getDate(file);
-            FileGraph.Node nextNode;
-            Path path;
-
-            if(ldt != null) {
-                nextNode = getDirectory(ldt);
-                path = Path.of(nextNode.path);
-            } else {
-                nextNode = errorNode;
-                path = Path.of(errorFolderPath);
-            }
+            FileGraph.Node nextNode = getDirectory(ldt);
+            Path path = Path.of(nextNode.path);
 
             try {
                 move.execute(file.toPath(), path.resolve(file.getName()));
