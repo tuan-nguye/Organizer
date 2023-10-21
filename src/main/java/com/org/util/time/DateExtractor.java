@@ -32,7 +32,7 @@ public class DateExtractor {
      */
     public static LocalDateTime getDate(File file) {
      if(!file.exists() || !file.isFile()) return null;
-     String fileType = FileTools.getFileExtension(file).toLowerCase();
+     String fileType = FileTools.getFileExtension(file);
      LocalDateTime ldt = null;
 
      if(extractorMap.containsKey(fileType)) {

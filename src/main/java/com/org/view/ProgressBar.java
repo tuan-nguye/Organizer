@@ -64,8 +64,9 @@ public class ProgressBar implements Observer {
     }
 
     public void print() {
-        String out = String.format("\r%s %.2f%%", bar, percent*100);
+        String out = String.format("\r%s %.2f%%\t", bar, percent*100);
         System.out.print(out);
+        if(percent == 1.0) System.out.println();
     }
 
     public static void main(String[] args) {

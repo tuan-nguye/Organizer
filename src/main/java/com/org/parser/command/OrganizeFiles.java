@@ -55,7 +55,7 @@ public class OrganizeFiles extends Command {
             formattedSize /= 1000;
         }
 
-        int fileCount = FileTools.count(sourceDir, filter);
+        int fileCount = FileTools.countFiles(sourceDir, filter);
         System.out.printf("file count: %d, size: %.2f%s\n", fileCount, formattedSize, sizeUnit[unit]);
         ProgressBar bar = new ProgressBar(20, fileCount);
 

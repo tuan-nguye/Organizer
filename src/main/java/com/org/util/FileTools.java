@@ -10,11 +10,11 @@ import java.time.ZonedDateTime;
 import java.util.Properties;
 
 public class FileTools {
-    public static int count(File file) {
-        return count(file, null);
+    public static int countFiles(File file) {
+        return countFiles(file, (FileFilter) null);
     }
 
-    public static int count(File file, FilenameFilter filter) {
+    public static int countFiles(File file, FilenameFilter filter) {
         if(file == null) return 0;
         else if(file.isFile()) {
             if(filter == null || filter.accept(file.getParentFile(), file.getName())) return 1;
@@ -23,7 +23,52 @@ public class FileTools {
 
         int count = 0;
         for(File f : file.listFiles()) {
-            count += count(f, filter);
+            count += countFiles(f, filter);
+        }
+
+        return count;
+    }
+
+    public static int countFiles(File file, FileFilter filter) {
+        if(file == null) return 0;
+        else if(file.isFile()) {
+            if(filter == null || filter.accept(file)) return 1;
+            else return 0;
+        }
+
+        int count = 0;
+        for(File f : file.listFiles()) {
+            count += countFiles(f, filter);
+        }
+
+        return count;
+    }
+
+    public static int countFolders(File folder) {
+        return countFolders(folder, (FileFilter) null);
+    }
+
+    public static int countFolders(File folder, FileFilter filter) {
+        if(folder == null || !folder.exists()) return 0;
+        else if(folder.isFile()) return 0;
+
+        int count = 0;
+        if(filter == null || filter.accept(folder)) count = 1;
+        for(File f : folder.listFiles(a -> a.isDirectory())) {
+            count += countFolders(f, filter);
+        }
+
+        return count;
+    }
+
+    private static int countFolders(File folder, FilenameFilter filter) {
+        if(folder == null || !folder.exists()) return 0;
+        else if(folder.isFile()) return 0;
+
+        int count = 0;
+        if(filter == null || filter.accept(folder.getParentFile(), folder.getName())) count = 1;
+        for(File f : folder.listFiles(a -> a.isDirectory())) {
+            count += countFolders(f, filter);
         }
 
         return count;
@@ -184,7 +229,7 @@ public class FileTools {
         String fileName = file.getName();
         int idxDot = fileName.lastIndexOf('.');
         if(idxDot == -1) return "";
-        return fileName.substring(idxDot+1);
+        return fileName.substring(idxDot+1).toLowerCase();
     }
 
     public static String getFileExtension(String fileName) {

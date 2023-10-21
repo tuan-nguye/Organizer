@@ -1,8 +1,11 @@
 package com.org.util.consistency;
 
+import com.org.observer.Observer;
+import com.org.observer.Subject;
 import com.org.organizer.ThresholdOrganizer;
 import com.org.organizer.copy.ICopy;
 import com.org.organizer.copy.Move;
+import com.org.organizer.copy.MoveReplace;
 import com.org.parser.Configuration;
 import com.org.util.FileTools;
 import com.org.util.graph.FileGraph;
@@ -13,15 +16,21 @@ import com.org.util.time.DateTools;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class ModelFixer {
+public class ModelFixer implements Subject<Integer> {
     private FileGraph fileGraph;
     private int threshold;
     private FileGraph.Node errorNode;
+
+    // subject/observer stuff, count number of errors fixed
+    private List<Observer> obs = new ArrayList<>();
+    private int errorsFixed = 0;
+    private Map<FileGraph.Node, Integer> folderErrorCountMap = new HashMap<>();
 
     public ModelFixer(Configuration config) {
         fileGraph = FileGraphFactory.get(config.PROPERTY_FILE_PATH_STRING);
@@ -31,8 +40,18 @@ public class ModelFixer {
     }
 
     public void fixStructure(Map<ModelError, List<FileGraph.Node>> errors) {
+        errorsFixed = 0;
+        folderErrorCountMap.clear();
+        for(Map.Entry<ModelError, List<FileGraph.Node>> e : errors.entrySet()) {
+            for(FileGraph.Node n : e.getValue()) {
+                folderErrorCountMap.put(n, folderErrorCountMap.getOrDefault(n, 0)+1);
+            }
+        }
+        System.out.println("attempting to restore folders...");
         Set<FileGraph.Node> unrestorableFolders = fixFolders(errors);
+        System.out.println("moving files...");
         fixFiles(errors, unrestorableFolders);
+        System.out.println("reducing structure...");
         reduceStructure();
     }
 
@@ -41,6 +60,7 @@ public class ModelFixer {
         Set<FileGraph.Node> toRestore = getRestorableFolders(errors);
 
         for(FileGraph.Node fn : toRestore) {
+            if(fn.depth >= 6) continue;
             String original = fn.path;
             List<FileGraph.Node> path = getPathToNode(fn);
             boolean restored = restoreFolder(fn, path, faultyFolders);
@@ -49,8 +69,14 @@ public class ModelFixer {
             if(!fn.path.equals(original)) {
                 updateFolders();
                 path = getPathToNode(fn);
-                faultyFolders.removeAll(path);
+                for(FileGraph.Node n : path) {
+                    if(faultyFolders.remove(n)) {
+                        errorsFixed += folderErrorCountMap.getOrDefault(n, 0);
+                        folderErrorCountMap.remove(n);
+                    }
+                }
                 System.out.printf("successfully restored structure:\n%s -> %s\n", original, fn.path);
+                notifyObservers();
             }
         }
 
@@ -95,7 +121,7 @@ public class ModelFixer {
 
 
         // check sibling nodes
-        if(path.size() >= 3 && !validateWithSiblings(path.get(path.size()-2), node, faultyFolders)) {
+        if(path.size() >= 3 && !validateWithSiblings(path.get(path.size()-2), node, folderName, faultyFolders)) {
             return false;
         }
 
@@ -114,7 +140,7 @@ public class ModelFixer {
             String newFolderName = correctPreviousFolderName(nextNode.path);
 
 
-            if(!validateWithSiblings(path.get(i-1), currNode, faultyFolders)) {
+            if(!validateWithSiblings(path.get(i-1), currNode, newFolderName, faultyFolders)) {
                 return false;
             }
 
@@ -164,7 +190,7 @@ public class ModelFixer {
         if(ldt == null) return false;
         DateIterator di = new DateIterator(ldt);
         boolean first = true;
-        for(int i = 0; i < node.depth; i++) {
+        for(int i = 0; i < Math.min(node.depth, 6); i++) {
             if(first) first = false;
             else folderNameBuilder.append("_");
             folderNameBuilder.append(di.next());
@@ -188,9 +214,8 @@ public class ModelFixer {
      * @return true if the new folder name is conform with the other
      * valid sibling nodes
      */
-    private boolean  validateWithSiblings(FileGraph.Node parent, FileGraph.Node node, Set<FileGraph.Node> faultyNodes) {
+    private boolean  validateWithSiblings(FileGraph.Node parent, FileGraph.Node node, String folderName, Set<FileGraph.Node> faultyNodes) {
         if(node.depth <= 1) return true;
-        String folderName = DateTools.folderName(new File(node.path).listFiles(a -> a.isFile())[0], node.depth);
 
         String prefix = folderName.substring(0, folderName.lastIndexOf('_'));
         for(FileGraph.Node sibling : parent.children.values()) {
@@ -272,6 +297,11 @@ public class ModelFixer {
         return true;
     }
 
+    /**
+     * fix files in the unrestorable folders by moving them to their correct location
+     * @param errors
+     * @param unrestorableFolders
+     */
     private void fixFiles(Map<ModelError, List<FileGraph.Node>> errors, Set<FileGraph.Node> unrestorableFolders) {
         // union of invalid folder name, above threshold, and files in non leaf folder
         unrestorableFolders.addAll(errors.get(ModelError.FILES_IN_NON_LEAF));
@@ -280,17 +310,24 @@ public class ModelFixer {
             copyFilesToCorrectLocation(invalidFolder, foldersAboveThreshold);
             if(invalidFolder.leaf) invalidFolder.fileCount = FileTools.countDirectFiles(new File(invalidFolder.path));
             else invalidFolder.fileCount = 0;
+            errorsFixed += folderErrorCountMap.getOrDefault(invalidFolder, 0);
+            folderErrorCountMap.remove(invalidFolder);
+            notifyObservers();
         }
+        System.out.println("reorganizing...");
         ThresholdOrganizer org = new ThresholdOrganizer(new Move(), threshold, fileGraph.getRoot().path);
         foldersAboveThreshold.addAll(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD));
         for(FileGraph.Node folder : foldersAboveThreshold) {
             if(folder.fileCount > threshold) org.reorganize(folder);
+            errorsFixed += folderErrorCountMap.getOrDefault(folder, 0);
+            folderErrorCountMap.remove(folder);
+            notifyObservers();
         }
     }
 
     private void copyFilesToCorrectLocation(FileGraph.Node folderNode, Set<FileGraph.Node> foldersAboveThreshold) {
         File folder = new File(folderNode.path);
-        ICopy move = new Move();
+        ICopy move = new MoveReplace();
 
         for(File file : folder.listFiles(f -> f.isFile())) {
             if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
@@ -375,5 +412,25 @@ public class ModelFixer {
 
             if(node.children.isEmpty()) node.leaf = true;
         }
+    }
+
+    @Override
+    public void register(Observer o) {
+        obs.add(o);
+    }
+
+    @Override
+    public void unregister(Observer o) {
+        obs.remove(o);
+    }
+
+    @Override
+    public void notifyObservers() {
+        for(Observer ob : obs) ob.update();
+    }
+
+    @Override
+    public Integer getState() {
+        return errorsFixed;
     }
 }

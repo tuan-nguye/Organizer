@@ -1,5 +1,6 @@
 package tests.classes;
 
+import com.org.util.time.DateExtractor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import com.org.organizer.ThresholdOrganizer;
@@ -11,6 +12,7 @@ import com.org.util.FileTools;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,14 +49,14 @@ public class ThresholdOrganizerTest {
             assertTrue(file.exists());
         }
 
-        assertEquals(files.length+1, FileTools.count(new File(repoPath)));
+        assertEquals(files.length+1, FileTools.countFiles(new File(repoPath)));
     }
 
     @Test
     public void addUnallowedFileExtension() {
         organizer.allowFileExtension("txt");
         organizer.copyAndOrganize(GenerateExampleFiles.testFilesPath+File.separator+"csv");
-        assertEquals(0, FileTools.count(new File(repoPath), (dir, name) -> name.contains("csv")));
+        assertEquals(0, FileTools.countFiles(new File(repoPath), (dir, name) -> name.contains("csv")));
     }
 
     @Test

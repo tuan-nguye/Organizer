@@ -30,7 +30,7 @@ public class ThresholdOrganizer extends Organizer {
 
     private void dfs(File file) {
         if(file.isFile()) {
-            if(!fileExtensionAllowed(FileTools.getFileExtension(file).toLowerCase())) return;
+            if(!fileExtensionAllowed(FileTools.getFileExtension(file))) return;
             copyFile(file);
             incrementCounter();
             notifyObservers();
@@ -79,7 +79,7 @@ public class ThresholdOrganizer extends Organizer {
      * @param node
      */
     public void reorganize(FileGraph.Node node) {
-        if(node.fileCount <= threshold || node == errorNode) return;
+        if(node.depth == 6 ||node.fileCount <= threshold || node == errorNode) return;
         node.leaf = false;
         File directory = new File(node.path);
 

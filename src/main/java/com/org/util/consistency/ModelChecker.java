@@ -1,5 +1,7 @@
 package com.org.util.consistency;
 
+import com.org.observer.Observer;
+import com.org.observer.Subject;
 import com.org.parser.Configuration;
 import com.org.util.FileTools;
 import com.org.util.graph.FileGraph;
@@ -15,13 +17,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModelChecker {
+public class ModelChecker implements Subject<Integer> {
     private FileGraph graph;
     private Configuration config;
     private int threshold;
     // saved errors after check
     private Map<ModelError, List<FileGraph.Node>> errors = new HashMap<>();
     private FileGraph.Node errorNode;
+
+    // subject/observer stuff
+    private List<Observer> obs = new ArrayList<>();
+    int foldersChecked = 0;
 
     public ModelChecker(Configuration config) {
         this.graph = FileGraphFactory.get(config.PROPERTY_FILE_PATH_STRING);
@@ -40,6 +46,7 @@ public class ModelChecker {
      * files also have errors by default
      */
     public void checkAll() {
+        foldersChecked = 0;
         errors.clear();
         for(ModelError me : ModelError.values()) errors.put(me, new ArrayList<>());
         checkAllDfs(graph.getRoot(), new ArrayList<>());
@@ -81,6 +88,10 @@ public class ModelChecker {
 
         if(node.leaf && numFiles == 0) errors.get(ModelError.CAN_BE_REDUCED).add(node);
         else if(!node.leaf && numFiles <= threshold) errors.get(ModelError.CAN_BE_REDUCED).add(node);
+
+        // update folder count
+        foldersChecked++;
+        notifyObservers();
 
         // pop folder name out
         path.remove(path.size()-1);
@@ -201,5 +212,27 @@ public class ModelChecker {
         }
 
         return true;
+    }
+
+    @Override
+    public void register(Observer o) {
+        obs.add(o);
+    }
+
+    @Override
+    public void unregister(Observer o) {
+        obs.remove(o);
+    }
+
+    @Override
+    public void notifyObservers() {
+        for(Observer ob : obs) {
+            ob.update();
+        }
+    }
+
+    @Override
+    public Integer getState() {
+        return foldersChecked;
     }
 }
