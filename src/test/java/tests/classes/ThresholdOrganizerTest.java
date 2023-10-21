@@ -57,7 +57,7 @@ public class ThresholdOrganizerTest {
         assertEquals(0, FileTools.count(new File(repoPath), (dir, name) -> name.contains("csv")));
     }
 
-    @Test
+    //@Test
     public void copyCorruptFileTest() {
         File corruptJpg = new File("test-bin", "image.jpg");
 

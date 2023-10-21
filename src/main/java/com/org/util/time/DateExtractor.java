@@ -34,7 +34,7 @@ public class DateExtractor {
      LocalDateTime ldt = null;
 
      if(extractorMap.containsKey(fileType)) ldt = extractorMap.get(fileType).readDate(file);
-     else ldt = FileTools.dateTime(file.lastModified());
+     if(ldt == null) ldt = FileTools.dateTime(file.lastModified());
 
      return ldt;
     }

@@ -45,7 +45,7 @@ public class OrganizeFiles extends Command {
         if(extOption.isEnabled()) {
             extensions.addAll(extOption.getValues());
             System.out.println(extOption.getValues());
-            filter = (dir, name) -> extensions.contains(FileTools.getFileExtension(name));
+            filter = (dir, name) -> extensions.contains(FileTools.getFileExtension(name).toLowerCase());
         }
 
         File sourceDir = new File(source);

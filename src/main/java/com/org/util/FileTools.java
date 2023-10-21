@@ -16,11 +16,14 @@ public class FileTools {
 
     public static int count(File file, FilenameFilter filter) {
         if(file == null) return 0;
-        else if(file.isFile()) return 1;
+        else if(file.isFile()) {
+            if(filter == null || filter.accept(file.getParentFile(), file.getName())) return 1;
+            else return 0;
+        }
 
         int count = 0;
-        for(File child : file.listFiles(filter)) {
-            count += count(child);
+        for(File f : file.listFiles()) {
+            count += count(f, filter);
         }
 
         return count;
@@ -34,10 +37,8 @@ public class FileTools {
         if(file == null) return 0;
         else if(!file.isDirectory()) return 1;
 
-        int count = 0;
-        for(File f : file.listFiles(filter)) {
-            if(f.isFile()) count++;
-        }
+        File[] files = file.listFiles(filter);
+        int count = files != null ? files.length : 0;
 
         return count;
     }
@@ -48,11 +49,13 @@ public class FileTools {
 
     public static long size(File file, FilenameFilter filter) {
         if(file == null) return 0;
-        else if(file.isFile()) return file.length();
-
+        else if(file.isFile()) {
+            if(filter == null || filter.accept(file.getParentFile(), file.getName())) return file.length();
+            else return 0;
+        }
         long sum = 0;
-        for(File child : file.listFiles(filter)) {
-            sum += size(child);
+        for(File f : file.listFiles()) {
+            sum += size(f, filter);
         }
 
         return sum;
@@ -179,7 +182,9 @@ public class FileTools {
 
     public static String getFileExtension(File file) {
         String fileName = file.getName();
-        return fileName.substring(fileName.lastIndexOf('.')+1);
+        int idxDot = fileName.lastIndexOf('.');
+        if(idxDot == -1) return "";
+        return fileName.substring(idxDot+1);
     }
 
     public static String getFileExtension(String fileName) {
