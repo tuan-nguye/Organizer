@@ -266,32 +266,4 @@ public class ModelFixerTest {
 
         resetRepo();
     }
-
-    @Test
-    public void test() {
-        File folder = new File("D:\\Pictures\\mama_backup\\unsortiert");
-        Set<String> extensions = new HashSet<>();
-        extensions.addAll(List.of("jpg", "jpeg", "mp4"));
-        FilenameFilter filter = (dir, name) -> extensions.contains(FileTools.getFileExtension(name).toLowerCase());
-        int count = FileTools.count(folder, filter);
-        System.out.println("count: " + count);
-        long size = FileTools.size(folder, filter);
-        System.out.println("size: " + ((double) size)/1024/1024/1024 + "GB");
-    }
-
-    private Map<String, Integer> fileExtensions(File root) {
-        Map<String, Integer> exts = new HashMap<>();
-        fileExtensions(root, exts);
-        return exts;
-    }
-
-    private void fileExtensions(File file, Map<String, Integer> exts) {
-        for(File f : file.listFiles()) {
-            if(f.isFile()) {
-                String ext = FileTools.getFileExtension(f.getName());
-                exts.put(ext, exts.getOrDefault(ext, 0) + 1);
-            }
-            else fileExtensions(f, exts);
-        }
-    }
 }
