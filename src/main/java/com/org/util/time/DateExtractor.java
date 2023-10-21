@@ -1,12 +1,14 @@
 package com.org.util.time;
 
 
+import com.drew.imaging.ImageProcessingException;
 import com.org.util.FileTools;
 import com.org.util.time.format.FormatInterface;
 import com.org.util.time.format.JpgFormat;
 import com.org.util.time.format.Mp4Format;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,10 +32,18 @@ public class DateExtractor {
      */
     public static LocalDateTime getDate(File file) {
      if(!file.exists() || !file.isFile()) return null;
-     String fileType = FileTools.getFileExtension(file);
+     String fileType = FileTools.getFileExtension(file).toLowerCase();
      LocalDateTime ldt = null;
 
-     if(extractorMap.containsKey(fileType)) ldt = extractorMap.get(fileType).readDate(file);
+     if(extractorMap.containsKey(fileType)) {
+         try {
+             ldt = extractorMap.get(fileType).readDate(file);
+         } catch(IOException ioe) {
+             return null;
+         } catch(ImageProcessingException ipe) {
+             return null;
+         }
+     }
      if(ldt == null) ldt = FileTools.dateTime(file.lastModified());
 
      return ldt;

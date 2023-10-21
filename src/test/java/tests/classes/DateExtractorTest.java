@@ -4,11 +4,15 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
 import org.junit.jupiter.api.Test;
 import com.org.util.FileTools;
 import com.org.util.time.DateExtractor;
 import java.io.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.TimeZone;
 
 import static org.junit.Assert.*;
 
@@ -66,7 +70,7 @@ public class DateExtractorTest {
         assertEquals(ldtCorrect, ldtLastModified);
     }
 
-    //@Test
+    @Test
     public void testNull() {
         File corruptJpg = new File("test-bin", "image.jpg");
 
@@ -78,5 +82,37 @@ public class DateExtractorTest {
 
         LocalDateTime ldt = DateExtractor.getDate(corruptJpg);
         assertNull(ldt);
+    }
+
+    @Test
+    public void test() {
+        File corruptJpg = new File("test-bin", "image.jpg");
+
+        try {
+            corruptJpg.createNewFile();
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        LocalDateTime ldt;
+
+        try {
+            Metadata md = ImageMetadataReader.readMetadata(corruptJpg);
+
+            for(Directory dir : md.getDirectories()) {
+                for(Tag tag : dir.getTags()) {
+                    System.out.println(tag);
+                }
+            }
+
+            ExifSubIFDDirectory directory = md.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+            if(directory == null) throw new Exception("no jpg metadata");
+            Date date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, TimeZone.getDefault());
+            if(date == null) date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME, TimeZone.getDefault());
+            if(date == null) date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_DIGITIZED, TimeZone.getDefault());
+            if(date != null) ldt = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
     }
 }

@@ -243,7 +243,7 @@ public class ModelFixerTest {
         resetRepo();
     }
 
-    //@Test
+    @Test
     public void moveToErrorFolder() {
         File corruptJpgNonLeaf = new File(repoPath + File.separator + "2023", "image.jpg");
         File corruptJpgLeaf = new File(repoPath + File.separator + "2010", "image2.jpg");

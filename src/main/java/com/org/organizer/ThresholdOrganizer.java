@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Locale;
 
 public class ThresholdOrganizer extends Organizer {
     private int threshold;
@@ -29,7 +30,7 @@ public class ThresholdOrganizer extends Organizer {
 
     private void dfs(File file) {
         if(file.isFile()) {
-            if(!fileExtensionAllowed(FileTools.getFileExtension(file))) return;
+            if(!fileExtensionAllowed(FileTools.getFileExtension(file).toLowerCase())) return;
             copyFile(file);
             incrementCounter();
             notifyObservers();
