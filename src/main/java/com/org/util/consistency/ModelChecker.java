@@ -33,8 +33,6 @@ public class ModelChecker implements Subject<Integer> {
         this.graph = FileGraphFactory.get(config.PROPERTY_FILE_PATH_STRING);
         this.config = config;
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
-        FileGraph.Node root = graph.getRoot();
-        errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
     }
 
     // function that dfs through all files and folders and saves errors
@@ -49,6 +47,10 @@ public class ModelChecker implements Subject<Integer> {
         foldersChecked = 0;
         errors.clear();
         for(ModelError me : ModelError.values()) errors.put(me, new ArrayList<>());
+        FileGraph.Node root = graph.getRoot();
+        String errorFolderPath = root.path + File.separator + Configuration.ERROR_FOLDER_NAME;
+        if(!new File(errorFolderPath).exists()) errors.get(ModelError.ERROR_FOLDER_MISSING).add(null);
+        errorNode = root.children.get(errorFolderPath);
         checkAllDfs(graph.getRoot(), new ArrayList<>());
     }
 

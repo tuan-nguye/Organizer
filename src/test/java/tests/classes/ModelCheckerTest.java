@@ -239,6 +239,9 @@ public class ModelCheckerTest {
             fail(e.getMessage());
         }
 
+        File errorFolder = new File(repoPath + File.separator + Configuration.ERROR_FOLDER_NAME);
+        errorFolder.delete();
+
         graph.update(graph.getRoot());
         checker.checkAll();
 
@@ -259,8 +262,11 @@ public class ModelCheckerTest {
         FileTools.delete(folderInvalidName);
         FileTools.delete(folderAboveThreshold);
         FileTools.delete(fileNonLeaf);
+        errorFolder.mkdir();
 
         graph.update(graph.getRoot());
+        FileGraph.Node root = graph.getRoot();
+        errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
     }
 
     // folder with multiple errors

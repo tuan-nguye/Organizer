@@ -28,6 +28,11 @@ public abstract class Organizer implements Subject<Integer> {
         fileGraph = FileGraphFactory.get(repoPath);
         errorFolderPath = repoPath + File.separator + Configuration.ERROR_FOLDER_NAME;
         errorNode = fileGraph.getRoot();
+        File errorFolder = new File(errorFolderPath);
+        if(!errorFolder.exists()) {
+            errorFolder.mkdir();
+            fileGraph.update(fileGraph.getRoot());
+        }
         errorNode = errorNode.children.get(errorFolderPath);
     }
 

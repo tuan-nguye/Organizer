@@ -266,4 +266,18 @@ public class ModelFixerTest {
 
         resetRepo();
     }
+
+    @Test
+    public void errorFolderMissing() {
+        File errorFolder = new File(repoPath + File.separator + Configuration.ERROR_FOLDER_NAME);
+        errorFolder.delete();
+
+        graph.update(graph.getRoot());
+        checker.checkAll();
+        fixer.fixStructure(checker.getErrors());
+
+        assertTrue(errorFolder.exists());
+
+        resetRepo();
+    }
 }

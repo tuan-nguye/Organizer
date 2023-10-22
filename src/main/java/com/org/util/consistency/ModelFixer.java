@@ -16,7 +16,6 @@ import com.org.util.time.DateTools;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -47,6 +46,7 @@ public class ModelFixer implements Subject<Integer> {
     public void fixStructure(Map<ModelError, List<FileGraph.Node>> errors) {
         errorsFixed = 0;
         folderErrorCountMap.clear();
+        fixErrorFolder(errors);
         for(Map.Entry<ModelError, List<FileGraph.Node>> e : errors.entrySet()) {
             for(FileGraph.Node n : e.getValue()) {
                 folderErrorCountMap.put(n, folderErrorCountMap.getOrDefault(n, 0)+1);
@@ -58,6 +58,15 @@ public class ModelFixer implements Subject<Integer> {
         fixFiles(errors, unrestorableFolders);
         System.out.println("reducing structure...");
         reduceStructure();
+    }
+
+    private void fixErrorFolder(Map<ModelError, List<FileGraph.Node>> errors) {
+        if(errors.get(ModelError.ERROR_FOLDER_MISSING).size() == 0) return;
+        FileGraph.Node root = fileGraph.getRoot();
+        String errorFolderPath = root.path + File.separator + Configuration.ERROR_FOLDER_NAME;
+        new File(errorFolderPath).mkdir();
+        fileGraph.update(root);
+        errorNode = root.children.get(errorFolderPath);
     }
 
     private Set<FileGraph.Node> fixFolders(Map<ModelError, List<FileGraph.Node>> errors) {
