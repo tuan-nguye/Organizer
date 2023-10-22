@@ -36,7 +36,12 @@ public class ModelFixer implements Subject<Integer> {
         fileGraph = FileGraphFactory.get(config.PROPERTY_FILE_PATH_STRING);
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
         FileGraph.Node root = fileGraph.getRoot();
-        errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
+        String errorFolderPath = root.path + File.separator + Configuration.ERROR_FOLDER_NAME;
+        errorNode = root.children.get(errorFolderPath);
+        if(errorNode == null) {
+            new File(errorFolderPath).mkdir();
+            fileGraph.update(root);
+        }
     }
 
     public void fixStructure(Map<ModelError, List<FileGraph.Node>> errors) {
@@ -352,6 +357,14 @@ public class ModelFixer implements Subject<Integer> {
                 ioe.printStackTrace();
             }
         }
+    }
+
+    private FileGraph.Node getDirectory(LocalDateTime ldt) {
+        FileGraph.Node node;
+        if(ldt == null) node = errorNode;
+        else node = fileGraph.getNode(ldt);
+        new File(node.path).mkdir();
+        return node;
     }
 
     /**
