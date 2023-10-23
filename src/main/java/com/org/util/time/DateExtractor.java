@@ -1,28 +1,28 @@
 package com.org.util.time;
 
 
+import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
+import com.drew.imaging.quicktime.QuickTimeMetadataReader;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.Tag;
 import com.org.util.FileTools;
-import com.org.util.time.format.FormatInterface;
-import com.org.util.time.format.JpgFormat;
-import com.org.util.time.format.Mp4Format;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.ZoneId;
+import java.util.*;
 
 public class DateExtractor {
-    private static Map<String, FormatInterface> extractorMap = new HashMap<>();
+    private static Set<String> supportedFileExtensions = new HashSet<>();
 
     static {
-        FormatInterface fi = new JpgFormat();
-        extractorMap.put("jpg", fi);
-        extractorMap.put("jpeg", fi);
-        extractorMap.put("mp4", new Mp4Format());
+        supportedFileExtensions.addAll(List.of("jpg", "jpeg", "png", "bmp", "gif", "webp"));
+        supportedFileExtensions.addAll(List.of("mp4", "avi", "mov"));
+        supportedFileExtensions.addAll(List.of("mp3", "m4a", "wav"));
     }
-
     /**
      * read the date from a file, if it's a jpg or mp4 file with date metadata
      * return this value. otherwise return the last modified date
@@ -31,21 +31,105 @@ public class DateExtractor {
      * null if an error occurred, e.g. corrupt jpg file
      */
     public static LocalDateTime getDate(File file) {
-     if(!file.exists() || !file.isFile()) return null;
-     String fileType = FileTools.getFileExtension(file);
-     LocalDateTime ldt = null;
+        if(!file.exists() || !file.isFile()) return null;
+        if(fileIsMarked(file)) return FileTools.dateTime(file.lastModified());
+        LocalDateTime ldt = null;
+        String ext = FileTools.getFileExtension(file);
 
-     if(extractorMap.containsKey(fileType)) {
-         try {
-             ldt = extractorMap.get(fileType).readDate(file);
-         } catch(IOException ioe) {
-             return null;
-         } catch(ImageProcessingException ipe) {
-             return null;
-         }
-     }
-     if(ldt == null) ldt = FileTools.dateTime(file.lastModified());
+        if(supportedFileExtensions.contains(ext)) {
+            try {
+                ldt = extractDateFromMetadata(file);
+            } catch(Exception e) {
+                return null;
+            }
+        }
 
-     return ldt;
+        if(ldt == null) ldt = FileTools.dateTime(file.lastModified());
+        markFile(file, ldt);
+        return ldt;
+    }
+
+    private static LocalDateTime extractDateFromMetadata(File file) throws Exception {
+        Metadata md = readMetadata(file);
+        boolean quickTime = false;
+        if(md == null) {
+            md = readQuickTimeMetadata(file);
+            quickTime = true;
+        }
+
+        Date minDate = null;
+        for(Directory dir : md.getDirectories()) {
+            if(dir.getName().equals("File")) continue;
+            for(Tag tag : dir.getTags()) {
+                if(tag.getDescription().length() < 16) continue;
+                Date date = dir.getDate(tag.getTagType(), TimeZone.getDefault());
+                if(date != null) {
+                    if(minDate == null) minDate = date;
+                    else if(date.compareTo(minDate) < 0) minDate = date;
+                }
+            }
+        }
+
+        if(minDate == null) {
+            if(quickTime) throw new Exception("file is probably corrupted");
+            else return null;
+        }
+        return LocalDateTime.ofInstant(minDate.toInstant(), ZoneId.systemDefault());
+    }
+
+    private static Metadata readMetadata(File file) {
+        Metadata md = null;
+
+        try {
+            md = ImageMetadataReader.readMetadata(file);
+        } catch(ImageProcessingException ipe) {
+        } catch(IOException ioe) {
+        }
+
+        return md;
+    }
+
+    private static Metadata readQuickTimeMetadata(File file) {
+        Metadata md = null;
+        try {
+            md = QuickTimeMetadataReader.readMetadata(file);
+        } catch(ImageProcessingException ipe) {
+        } catch(IOException ioe) {
+        }
+        return md;
+    }
+
+    private static boolean fileIsMarked(File file) {
+        long lm = file.lastModified();
+        long lmMark = lm % 1000;
+        long fileHash = fileNameHashCode(file.getName());
+        long nameMark = fileHash % 1000;
+        return lmMark == nameMark;
+    }
+
+    private static long fileNameHashCode(String value) {
+        long h = 0;
+
+        char val[] = value.toCharArray();
+
+        if(val.length == 0) return 0;
+        for (int i = 0; i < val.length; i++) {
+            h = 31 * h + val[i];
+        }
+
+        if(h < 0) {
+            if(h == Long.MIN_VALUE) h = Long.MAX_VALUE;
+            else h = -h;
+        }
+
+        return h;
+    }
+
+    private static void markFile(File file, LocalDateTime ldt) {
+        long epochMillis = FileTools.epochMilli(ldt);
+        long fileHash = fileNameHashCode(file.getName());
+        long mark = fileHash % 1000;
+        long markedLastModified = epochMillis - (epochMillis%1000) + mark;
+        file.setLastModified(markedLastModified);
     }
 }

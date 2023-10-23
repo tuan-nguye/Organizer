@@ -11,6 +11,7 @@ import com.org.util.time.DateExtractor;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.TemporalField;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -41,6 +42,7 @@ public class DateExtractorTest {
     public void jpgTest() {
         File img = new File(TEST_FILES_DIR, "img.jpg");
         LocalDateTime ldtExtr = DateExtractor.getDate(img);
+        ldtExtr = LocalDateTime.of(ldtExtr.getYear(), ldtExtr.getMonth(), ldtExtr.getDayOfMonth(), ldtExtr.getHour(), ldtExtr.getMinute(), ldtExtr.getSecond());
         LocalDateTime ldtCorrect = LocalDateTime.of(2021, 12, 20, 10, 36, 7);
         assertEquals(ldtCorrect, ldtExtr);
     }
@@ -49,6 +51,7 @@ public class DateExtractorTest {
     public void mp4Test() {
         File mp4 = new File(TEST_FILES_DIR, "vid.mp4");
         LocalDateTime ldtExtr = DateExtractor.getDate(mp4);
+        ldtExtr = LocalDateTime.of(ldtExtr.getYear(), ldtExtr.getMonth(), ldtExtr.getDayOfMonth(), ldtExtr.getHour(), ldtExtr.getMinute(), ldtExtr.getSecond());
         LocalDateTime ldtCorrect = LocalDateTime.of(2018, 10, 10, 22, 57, 31);
         assertEquals(ldtCorrect, ldtExtr);
     }
@@ -82,37 +85,5 @@ public class DateExtractorTest {
 
         LocalDateTime ldt = DateExtractor.getDate(corruptJpg);
         assertNull(ldt);
-    }
-
-    @Test
-    public void test() {
-        File corruptJpg = new File("test-bin", "image.jpg");
-
-        try {
-            corruptJpg.createNewFile();
-        } catch(Exception e) {
-            fail(e.getMessage());
-        }
-
-        LocalDateTime ldt;
-
-        try {
-            Metadata md = ImageMetadataReader.readMetadata(corruptJpg);
-
-            for(Directory dir : md.getDirectories()) {
-                for(Tag tag : dir.getTags()) {
-                    System.out.println(tag);
-                }
-            }
-
-            ExifSubIFDDirectory directory = md.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-            if(directory == null) throw new Exception("no jpg metadata");
-            Date date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, TimeZone.getDefault());
-            if(date == null) date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME, TimeZone.getDefault());
-            if(date == null) date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_DIGITIZED, TimeZone.getDefault());
-            if(date != null) ldt = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
     }
 }
