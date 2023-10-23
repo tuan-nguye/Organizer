@@ -16,13 +16,64 @@ import java.time.ZoneId;
 import java.util.*;
 
 public class DateExtractor {
-    private static Set<String> supportedFileExtensions = new HashSet<>();
-
-    static {
-        supportedFileExtensions.addAll(List.of("jpg", "jpeg", "png", "bmp", "gif", "webp"));
-        supportedFileExtensions.addAll(List.of("mp4", "avi", "mov"));
-        supportedFileExtensions.addAll(List.of("mp3", "m4a", "wav"));
-    }
+    private static Set<String> supportedFileExtensions = new HashSet<String>(
+            Arrays.asList(
+                    "3fr",
+                    "3g2",
+                    "3gp",
+                    "ai",
+                    "arw",
+                    "avi",
+                    "bmp",
+                    "cam",
+                    "cr2",
+                    "cr3",
+                    "crw",
+                    "dcr",
+                    "dng",
+                    "eps",
+                    "fuzzed",
+                    "gif",
+                    "gpr",
+                    "heic",
+                    "heif",
+                    "ico",
+                    "j2c",
+                    "jp2",
+                    "jpeg",
+                    "jpf",
+                    "jpg",
+                    "jpm",
+                    "kdc",
+                    "m2ts",
+                    "m2v",
+                    "m4a",
+                    "m4v",
+                    "mj2",
+                    "mov",
+                    "mp3",
+                    "mp4",
+                    "mpg",
+                    "mts",
+                    "nef",
+                    "orf",
+                    "pbm",
+                    "pcx",
+                    "pef",
+                    "pgm",
+                    "png",
+                    "pnm",
+                    "ppm",
+                    "psd",
+                    "raf",
+                    "rw2",
+                    "rwl",
+                    "srw",
+                    "tif",
+                    "tiff",
+                    "wav",
+                    "webp",
+                    "x3f"));
     /**
      * read the date from a file, if it's a jpg or mp4 file with date metadata
      * return this value. otherwise return the last modified date
