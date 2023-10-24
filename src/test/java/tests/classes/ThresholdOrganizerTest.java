@@ -88,9 +88,9 @@ public class ThresholdOrganizerTest {
     @Test
     public void duplicateReplaceTest() {
         File duplicateSrc = new File(GenerateExampleFiles.testFilesPath + File.separator + "txt", "test2.txt");
-        ICopy copy = new Copy();
+        ICopy copy = new CopyReplace();
         File duplicate = new File("test-bin", "test2.txt");
-        Organizer orgCopy = new ThresholdOrganizer(copy, 2, repoPath);
+        Organizer orgCopy = new ThresholdOrganizer(copy, 3, repoPath);
         Organizer orgMove = new ThresholdOrganizer(new MoveReplace(), 2, repoPath);
 
         try {
