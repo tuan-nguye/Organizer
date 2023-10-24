@@ -48,17 +48,18 @@ public class ThresholdOrganizer extends Organizer {
         LocalDateTime dateTime = DateExtractor.getDate(f);
 
         FileGraph.Node node = getDirectory(dateTime);
-        Path path = Path.of(node.path);
+        String fileName = FileTools.chooseFileName(node.path, f.getName(), dateTime);
+        Path path = Path.of(node.path, fileName);
 
         if(path == null) return false;
-
+        boolean duplicate = path.toFile().exists();
         try {
-            operation.execute(f.toPath(), path.resolve(f.getName()));
+            operation.execute(f.toPath(), path);
         } catch(IOException ioe) {
-            System.out.println("warning: " + ioe + ": " + ioe.getMessage());
             return false;
         }
 
+        if(duplicate) return true;
         node.fileCount++;
         reorganize(node);
         return true;

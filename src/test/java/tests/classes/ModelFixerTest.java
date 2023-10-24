@@ -280,4 +280,67 @@ public class ModelFixerTest {
 
         resetRepo();
     }
+
+    @Test
+    public void duplicateRenameTest() {
+        File duplicate2Src = new File(GenerateExampleFiles.testFilesPath + File.separator + "txt", "test2.txt");
+        ICopy copy = new Copy(), move = new Move();
+        File duplicate2 = new File(repoPath + File.separator + "2023" + File.separator + "2023_feb", "test2.txt");
+        File test4 = new File(repoPath + File.separator + "2021", "test4.txt");
+        File test4NewLocation = new File(repoPath + File.separator + "2021" + File.separator + "2021_aug", "test4.txt");
+        File test4_0 = new File(repoPath + File.separator + "2021" + File.separator + "2021_jul", "test4.txt");
+
+        try {
+            copy.execute(duplicate2Src.toPath(), duplicate2.toPath());
+            long day = 1000*60*60*24;
+            duplicate2.setLastModified(duplicate2.lastModified()-day);
+            test4_0.getParentFile().mkdirs();
+            copy.execute(test4.toPath(), test4_0.toPath());
+            long month = 1000L*60*60*24*31;
+            test4_0.setLastModified(test4_0.lastModified()-month);
+            test4NewLocation.getParentFile().mkdirs();
+            move.execute(test4.toPath(), test4NewLocation.toPath());
+        } catch(Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        graph.update(graph.getRoot());
+        checker.checkAll();
+        fixer.fixStructure(checker.getErrors());
+
+        File duplicate2InCorrectFolder = new File(repoPath + File.separator + "2010", "test2(1).txt");
+        assertTrue(duplicate2InCorrectFolder.exists());
+        File duplicate4InCorrectFolder = new File(repoPath + File.separator + "2021", "test4.txt");
+        assertTrue(duplicate4InCorrectFolder.exists());
+        File duplicate4_0InCorrectFolder = new File(repoPath + File.separator + "2021", "test4(1).txt");
+        assertTrue(duplicate4_0InCorrectFolder.exists());
+
+        resetRepo();
+    }
+
+    @Test
+    public void duplicateIgnore() {
+        File test2 = new File(repoPath + File.separator + "2010" + File.separator + "test2.txt");
+        File test2_0 = new File(repoPath + File.separator + "2010" + File.separator + "2010_jul", "test2.txt");
+        File test4 = new File(repoPath + File.separator + "2021", "test4.txt");
+        File test4_0 = new File(repoPath + File.separator + "2023" + File.separator + "2023_feb", "test4.txt");
+        ICopy copy = new Copy();
+        int numFilesBefore = FileTools.countFiles(new File(repoPath));
+
+        try {
+            test2_0.getParentFile().mkdirs();
+            copy.execute(test2.toPath(), test2_0.toPath());
+            copy.execute(test4.toPath(), test4_0.toPath());
+        } catch(Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        graph.update(graph.getRoot());
+        checker.checkAll();
+        fixer.fixStructure(checker.getErrors());
+
+        int numFilesAfter = FileTools.countFiles(new File(repoPath));
+        assertEquals(numFilesBefore, numFilesAfter);
+        resetRepo();
+    }
 }

@@ -321,7 +321,7 @@ public class ModelFixer implements Subject<Integer> {
         unrestorableFolders.addAll(errors.get(ModelError.FILES_IN_NON_LEAF));
         Set<FileGraph.Node> foldersAboveThreshold = new HashSet<>();
         for(FileGraph.Node invalidFolder : unrestorableFolders) {
-            copyFilesToCorrectLocation(invalidFolder, foldersAboveThreshold);
+            moveFilesToCorrectLocation(invalidFolder, foldersAboveThreshold);
             if(invalidFolder.leaf) invalidFolder.fileCount = FileTools.countDirectFiles(new File(invalidFolder.path));
             else invalidFolder.fileCount = 0;
             errorsFixed += folderErrorCountMap.getOrDefault(invalidFolder, 0);
@@ -339,28 +339,26 @@ public class ModelFixer implements Subject<Integer> {
         }
     }
 
-    private void copyFilesToCorrectLocation(FileGraph.Node folderNode, Set<FileGraph.Node> foldersAboveThreshold) {
+    private void moveFilesToCorrectLocation(FileGraph.Node folderNode, Set<FileGraph.Node> foldersAboveThreshold) {
         File folder = new File(folderNode.path);
         ICopy move = new MoveReplace();
 
         for(File file : folder.listFiles(f -> f.isFile())) {
             if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
             LocalDateTime ldt = DateExtractor.getDate(file);
-            FileGraph.Node correctNode;
+            FileGraph.Node correctNode = getDirectory(ldt);
 
-            if(ldt != null) correctNode = fileGraph.getNode(ldt);
-            else correctNode = errorNode;
-
-            File correctFolder = new File(correctNode.path);
-
-            if(!correctFolder.exists()) correctFolder.mkdir();
-            Path from = file.toPath(), to = Path.of(correctNode.path, file.getName());
+            String fileName = FileTools.chooseFileName(correctNode.path, file.getName(), ldt);
+            Path from = file.toPath(), to = Path.of(correctNode.path, fileName);
             if(from.equals(to)) continue;
 
+            boolean duplicate = to.toFile().exists();
             try {
-                move.execute(file.toPath(), Path.of(correctNode.path, file.getName()));
-                correctNode.fileCount++;
-                if(correctNode.fileCount > threshold) foldersAboveThreshold.add(correctNode);
+                move.execute(from, to);
+                if(!duplicate) {
+                    correctNode.fileCount++;
+                    if(correctNode.fileCount > threshold) foldersAboveThreshold.add(correctNode);
+                }
             } catch(IOException ioe) {
                 System.out.println("modelfixer: error when moving file to correct location");
                 ioe.printStackTrace();
@@ -412,13 +410,15 @@ public class ModelFixer implements Subject<Integer> {
             }
 
             if(allLeaves && numFiles <= threshold) {
-                ICopy moveOp = new Move();
+                ICopy moveOp = new MoveReplace();
                 Path currDir = Path.of(node.path);
                 for(FileGraph.Node child : node.children.values()) {
                     File childFolder = new File(child.path);
                     for(File f : childFolder.listFiles()) {
+                        LocalDateTime ldt = DateExtractor.getDate(f);
+                        String fileName = FileTools.chooseFileName(node.path, f.getName(), ldt);
                         try {
-                            moveOp.execute(f.toPath(), currDir.resolve(f.getName()));
+                            moveOp.execute(f.toPath(), currDir.resolve(fileName));
                         } catch(IOException ioe) {
                             System.err.println("error moving during restructuring: " + f.getAbsolutePath());
                             ioe.printStackTrace();

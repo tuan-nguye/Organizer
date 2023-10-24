@@ -70,6 +70,7 @@ public class DateExtractorTest {
         }
 
         LocalDateTime ldtLastModified = DateExtractor.getDate(txt);
+        ldtLastModified = LocalDateTime.of(ldtLastModified.getYear(), ldtLastModified.getMonth(), ldtLastModified.getDayOfMonth(), ldtLastModified.getHour(), ldtLastModified.getMinute(), ldtLastModified.getSecond());
         assertEquals(ldtCorrect, ldtLastModified);
     }
 

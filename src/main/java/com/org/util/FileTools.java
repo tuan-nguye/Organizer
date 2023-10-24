@@ -1,8 +1,11 @@
 package com.org.util;
 
+import com.org.util.time.DateExtractor;
+
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -239,5 +242,30 @@ public class FileTools {
     public static String getNameWithoutPrefix(String prefix, String path) {
         if(path == prefix) return "";
         return path.substring(path.lastIndexOf(File.separator)+1);
+    }
+
+    public static String chooseFileName(String path, String fileName, LocalDateTime originalTime) {
+        File file = new File(path, fileName);
+        LocalDateTime ldt = DateExtractor.getDate(file);
+
+        if(!file.exists() || ldt.equals(originalTime)) return fileName;
+
+        int idxDot = fileName.lastIndexOf('.');
+        String name = fileName.substring(0, idxDot);
+        String ext = fileName.substring(idxDot+1);
+
+        StringBuilder nameBuilder = new StringBuilder();
+        int count = 1;
+        while(true) {
+            nameBuilder.append(name).append('(').append(count).append(')').append('.').append(ext);
+            file = new File(path, nameBuilder.toString());
+            if(file.exists()) ldt = DateExtractor.getDate(file);
+            else break;
+            if(ldt.equals(originalTime)) break;
+            nameBuilder.setLength(0);
+            count++;
+        }
+
+        return nameBuilder.toString();
     }
 }

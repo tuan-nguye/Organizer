@@ -97,6 +97,7 @@ public class DateExtractor {
 
         if(ldt == null) ldt = FileTools.dateTime(file.lastModified());
         markFile(file, ldt);
+        ldt = FileTools.dateTime(file.lastModified());
         return ldt;
     }
 
