@@ -15,6 +15,8 @@ public class FileGraph {
     public static class Node {
         public String path;
         public int fileCount = 0;
+        public int fileCountSubTree = 0;
+        public long sizeTotal = 0;
         public int depth;
         public boolean leaf = true;
         public Map<String, Node> children = new HashMap<>();
@@ -44,24 +46,31 @@ public class FileGraph {
             return;
         }
         int fileCount = 0;
+        int fileCountSubTree = 0;
+        long size = 0;
         Set<String> toRemove = new HashSet<>(node.children.keySet());
 
         for(File child : file.listFiles()) {
             if(child.isFile()) {
-                if(child.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
+                if(child.isHidden() && child.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
                 fileCount++;
+                size += child.length();
             } else {
                 String nextStr = child.getAbsolutePath();
                 if(!node.children.containsKey(nextStr)) node.children.put(nextStr, new Node(nextStr, node.depth+1));
                 Node nextNode = node.children.get(nextStr);
                 toRemove.remove(nextStr);
                 update(nextNode);
+                fileCountSubTree += nextNode.fileCountSubTree;
+                size += nextNode.sizeTotal;
             }
         }
 
         for(String rm : toRemove) node.children.remove(rm);
         node.fileCount = fileCount;
         node.leaf = node.children.isEmpty();
+        node.fileCountSubTree = fileCountSubTree + fileCount;
+        node.sizeTotal = size;
     }
 
     public void printFileStructure() {

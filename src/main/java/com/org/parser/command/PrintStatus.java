@@ -2,8 +2,12 @@ package com.org.parser.command;
 
 import com.org.parser.CommandException;
 import com.org.parser.Configuration;
+import com.org.util.FileTools;
 import com.org.util.consistency.Checker;
+import com.org.util.graph.FileGraph;
+import com.org.util.graph.FileGraphFactory;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
@@ -30,5 +34,15 @@ public class PrintStatus extends Command {
         for(Map.Entry<Object, Object> entry : properties.entrySet()) {
             System.out.printf("%s=%s\n", entry.getKey(), entry.getValue());
         }
+
+        File root = new File(config.PROPERTY_FILE_PATH_STRING);
+        FileGraph fileGraph = FileGraphFactory.get(config.PROPERTY_FILE_PATH_STRING);
+        int fileCountTools = FileTools.countFiles(root);
+        int fileCountGraph = fileGraph.getRoot().fileCountSubTree;
+        long sizeTools = FileTools.size(root);
+        long sizeGraph = fileGraph.getRoot().sizeTotal;
+
+        System.out.println("files: " + fileCountTools + ", " + fileCountGraph);
+        System.out.println("size: " + sizeTools + ", " + sizeGraph);
     }
 }

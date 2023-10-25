@@ -9,6 +9,8 @@ import com.org.parser.option.Option;
 import com.org.parser.option.ValueOption;
 import com.org.util.consistency.Checker;
 import com.org.util.FileTools;
+import com.org.util.graph.FileGraph;
+import com.org.util.graph.FileGraphFactory;
 import com.org.view.ProgressBar;
 
 import java.io.File;
