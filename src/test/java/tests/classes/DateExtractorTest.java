@@ -5,12 +5,16 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.org.organizer.Organizer;
+import com.org.organizer.ThresholdOrganizer;
+import com.org.organizer.copy.Copy;
 import org.junit.jupiter.api.Test;
 import com.org.util.FileTools;
 import com.org.util.time.DateExtractor;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalField;
 import java.util.Date;
 import java.util.TimeZone;
@@ -42,7 +46,7 @@ public class DateExtractorTest {
     public void jpgTest() {
         File img = new File(TEST_FILES_DIR, "img.jpg");
         LocalDateTime ldtExtr = DateExtractor.getDate(img);
-        ldtExtr = LocalDateTime.of(ldtExtr.getYear(), ldtExtr.getMonth(), ldtExtr.getDayOfMonth(), ldtExtr.getHour(), ldtExtr.getMinute(), ldtExtr.getSecond());
+        ldtExtr = ldtExtr.truncatedTo(ChronoUnit.SECONDS);
         LocalDateTime ldtCorrect = LocalDateTime.of(2021, 12, 20, 10, 36, 7);
         assertEquals(ldtCorrect, ldtExtr);
     }
@@ -51,7 +55,7 @@ public class DateExtractorTest {
     public void mp4Test() {
         File mp4 = new File(TEST_FILES_DIR, "vid.mp4");
         LocalDateTime ldtExtr = DateExtractor.getDate(mp4);
-        ldtExtr = LocalDateTime.of(ldtExtr.getYear(), ldtExtr.getMonth(), ldtExtr.getDayOfMonth(), ldtExtr.getHour(), ldtExtr.getMinute(), ldtExtr.getSecond());
+        ldtExtr = ldtExtr.truncatedTo(ChronoUnit.SECONDS);
         LocalDateTime ldtCorrect = LocalDateTime.of(2018, 10, 10, 22, 57, 31);
         assertEquals(ldtCorrect, ldtExtr);
     }
@@ -70,7 +74,7 @@ public class DateExtractorTest {
         }
 
         LocalDateTime ldtLastModified = DateExtractor.getDate(txt);
-        ldtLastModified = LocalDateTime.of(ldtLastModified.getYear(), ldtLastModified.getMonth(), ldtLastModified.getDayOfMonth(), ldtLastModified.getHour(), ldtLastModified.getMinute(), ldtLastModified.getSecond());
+        ldtLastModified = ldtLastModified.truncatedTo(ChronoUnit.SECONDS);
         assertEquals(ldtCorrect, ldtLastModified);
     }
 
@@ -79,6 +83,7 @@ public class DateExtractorTest {
         File corruptJpg = new File("test-bin", "image.jpg");
 
         try {
+            corruptJpg.getParentFile().mkdirs();
             corruptJpg.createNewFile();
         } catch(Exception e) {
             fail(e.getMessage());
@@ -88,4 +93,33 @@ public class DateExtractorTest {
         assertNull(ldt);
     }
 
+    @Test
+    public void testMark() {
+        File txt = new File("test-bin", "text.txt");
+        File repo = new File("test-bin" + File.separator + "extrRepo");
+
+        try {
+            txt.getParentFile().mkdirs();
+            txt.createNewFile();
+            LocalDateTime ldt = LocalDateTime.of(2023, 10, 25, 16, 46, 30, 0);
+            txt.setLastModified(FileTools.epochMilli(ldt));
+        } catch(Exception e) {
+            fail(e.getMessage());
+        }
+
+        repo.mkdirs();
+        Organizer org = new ThresholdOrganizer(new Copy(), 5, repo.getAbsolutePath());
+        org.copyAndOrganize(txt.getAbsolutePath());
+        txt.setLastModified(txt.lastModified()-1000);
+        org.copyAndOrganize(txt.getAbsolutePath());
+
+        // check
+        File jpgNewLocation = new File(repo.getAbsolutePath() + File.separator + "2023", txt.getName());
+        assertTrue(DateExtractor.fileIsMarked(jpgNewLocation));
+        File jpg1NewLocation = new File(jpgNewLocation.getParent(), "text(1).txt");
+        assertTrue(DateExtractor.fileIsMarked(jpg1NewLocation));
+
+        // clean up
+        FileTools.delete(repo);
+    }
 }

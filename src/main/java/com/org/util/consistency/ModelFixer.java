@@ -355,6 +355,7 @@ public class ModelFixer implements Subject<Integer> {
             boolean duplicate = to.toFile().exists();
             try {
                 move.execute(from, to);
+                DateExtractor.markFile(to.toFile(), ldt);
                 if(!duplicate) {
                     correctNode.fileCount++;
                     if(correctNode.fileCount > threshold) foldersAboveThreshold.add(correctNode);
@@ -417,8 +418,10 @@ public class ModelFixer implements Subject<Integer> {
                     for(File f : childFolder.listFiles()) {
                         LocalDateTime ldt = DateExtractor.getDate(f);
                         String fileName = FileTools.chooseFileName(node.path, f.getName(), ldt);
+                        Path destinationPath = currDir.resolve(fileName);
                         try {
-                            moveOp.execute(f.toPath(), currDir.resolve(fileName));
+                            moveOp.execute(f.toPath(), destinationPath);
+                            DateExtractor.markFile(destinationPath.toFile(), ldt);
                         } catch(IOException ioe) {
                             System.err.println("error moving during restructuring: " + f.getAbsolutePath());
                             ioe.printStackTrace();

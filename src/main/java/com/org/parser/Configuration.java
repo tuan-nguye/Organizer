@@ -41,7 +41,7 @@ public class Configuration {
 
     Command versionCommand = new PrintVersion()
             .setName("version")
-            .setDescription("organizer version 0.1");
+            .setDescription("organizer version 0.3");
 
     Command setPropertyCommand = new SetProperty()
             .setName("setProperty")

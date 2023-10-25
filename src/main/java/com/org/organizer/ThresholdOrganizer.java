@@ -55,6 +55,7 @@ public class ThresholdOrganizer extends Organizer {
         boolean duplicate = path.toFile().exists();
         try {
             operation.execute(f.toPath(), path);
+            DateExtractor.markFile(path.toFile(), dateTime);
         } catch(IOException ioe) {
             return false;
         }

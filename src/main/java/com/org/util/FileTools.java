@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Properties;
 
 public class FileTools {
@@ -224,6 +225,7 @@ public class FileTools {
     }
 
     public static long epochMilli(LocalDateTime ldt) {
+        if(ldt == null) return 0;
         ZonedDateTime zdt = ldt.atZone(ZoneId.systemDefault());
         return zdt.toInstant().toEpochMilli();
     }
@@ -248,7 +250,7 @@ public class FileTools {
         File file = new File(path, fileName);
         LocalDateTime ldt = DateExtractor.getDate(file);
 
-        if(!file.exists() || ldt.equals(originalTime)) return fileName;
+        if(!file.exists() || (ldt == null && originalTime == null) || ldt.truncatedTo(ChronoUnit.SECONDS).equals(originalTime.truncatedTo(ChronoUnit.SECONDS))) return fileName;
 
         int idxDot = fileName.lastIndexOf('.');
         String name = fileName.substring(0, idxDot);

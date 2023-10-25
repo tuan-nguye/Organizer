@@ -126,9 +126,22 @@ public class DateExtractor {
         }
 
         if(ldt == null) ldt = FileTools.dateTime(file.lastModified());
-        markFile(file, ldt);
-        ldt = FileTools.dateTime(file.lastModified());
         return ldt;
+    }
+
+    public static void markFile(File file) {
+        LocalDateTime ldt = getDate(file);
+        if(ldt == null) return;
+        markFile(file, ldt);
+    }
+
+    public static void markFile(File file, LocalDateTime ldt) {
+        if(ldt == null) return;
+        long epochMillis = FileTools.epochMilli(ldt);
+        long fileHash = fileNameHashCode(file.getName());
+        long mark = fileHash % 1000;
+        long markedLastModified = epochMillis - (epochMillis%1000) + mark;
+        file.setLastModified(markedLastModified);
     }
 
     private static LocalDateTime extractDateFromMetadata(File file) throws Exception {
@@ -183,7 +196,7 @@ public class DateExtractor {
         return md;
     }
 
-    private static boolean fileIsMarked(File file) {
+    public static boolean fileIsMarked(File file) {
         long lm = file.lastModified();
         long lmMark = lm % 1000;
         long fileHash = fileNameHashCode(file.getName());
@@ -207,13 +220,5 @@ public class DateExtractor {
         }
 
         return h;
-    }
-
-    private static void markFile(File file, LocalDateTime ldt) {
-        long epochMillis = FileTools.epochMilli(ldt);
-        long fileHash = fileNameHashCode(file.getName());
-        long mark = fileHash % 1000;
-        long markedLastModified = epochMillis - (epochMillis%1000) + mark;
-        file.setLastModified(markedLastModified);
     }
 }
