@@ -32,7 +32,6 @@ public class OrganizeFiles extends Command {
     @Override
     public void executeCommand(String[] args, Configuration config) {
         String source = args[0], destination = config.PROPERTY_FILE_PATH_STRING;
-        System.out.printf("copying files %s -> %s\n", source, destination);
 
         Map<String, Option> optionMap = config.allOptions();
 
@@ -62,11 +61,14 @@ public class OrganizeFiles extends Command {
         ICopy copyOperation;
         boolean move = optionMap.get("move").isEnabled();
         boolean replace = optionMap.get("replace").isEnabled();
+        String strOp;
 
         if(move) {
+            strOp = replace ? "moving and replacing" : "moving";
             if(replace) copyOperation = new MoveReplace();
             else copyOperation = new Move();
         } else {
+            strOp = replace ? "copying and replacing" : "copying";
             if(replace) copyOperation = new CopyReplace();
             else copyOperation = new Copy();
         }
@@ -78,6 +80,7 @@ public class OrganizeFiles extends Command {
         bar.setSubject(thresholdOrganizer);
         thresholdOrganizer.register(bar);
 
+        System.out.printf("%s files %s -> %s\n", strOp, source, destination);
         thresholdOrganizer.copyAndOrganize(source);
     }
 }

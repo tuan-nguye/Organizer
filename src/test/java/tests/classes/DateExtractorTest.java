@@ -87,4 +87,5 @@ public class DateExtractorTest {
         LocalDateTime ldt = DateExtractor.getDate(corruptJpg);
         assertNull(ldt);
     }
+
 }

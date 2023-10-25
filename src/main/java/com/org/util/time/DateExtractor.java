@@ -7,10 +7,19 @@ import com.drew.imaging.quicktime.QuickTimeMetadataReader;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
+import com.drew.metadata.avi.AviDirectory;
+import com.drew.metadata.eps.EpsDirectory;
+import com.drew.metadata.exif.*;
+import com.drew.metadata.iptc.IptcDirectory;
+import com.drew.metadata.mov.QuickTimeDirectory;
+import com.drew.metadata.mp4.Mp4Directory;
+import com.drew.metadata.png.PngDirectory;
+import com.drew.metadata.wav.WavDirectory;
 import com.org.util.FileTools;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -74,6 +83,27 @@ public class DateExtractor {
                     "wav",
                     "webp",
                     "x3f"));
+
+    private static final int currentYear = LocalDateTime.now().getYear();
+
+    private static Map<Class, List<Integer>> dateTagMap = new HashMap<>();
+
+    static {
+        dateTagMap.put(AviDirectory.class, List.of(AviDirectory.TAG_DATETIME_ORIGINAL));
+        dateTagMap.put(EpsDirectory.class, List.of(EpsDirectory.TAG_MODIFY_DATE, EpsDirectory.TAG_CREATION_DATE));
+        dateTagMap.put(ExifIFD0Directory.class, List.of(ExifIFD0Directory.TAG_DATETIME, ExifIFD0Directory.TAG_DATETIME_ORIGINAL, ExifIFD0Directory.TAG_DATETIME_DIGITIZED));
+        dateTagMap.put(ExifImageDirectory.class, List.of(ExifImageDirectory.TAG_DATETIME, ExifImageDirectory.TAG_DATETIME_ORIGINAL, ExifImageDirectory.TAG_DATETIME_DIGITIZED));
+        dateTagMap.put(ExifInteropDirectory.class, List.of(ExifInteropDirectory.TAG_DATETIME, ExifInteropDirectory.TAG_DATETIME_ORIGINAL, ExifInteropDirectory.TAG_DATETIME_DIGITIZED));
+        dateTagMap.put(ExifSubIFDDirectory.class, List.of(ExifSubIFDDirectory.TAG_DATETIME, ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, ExifSubIFDDirectory.TAG_DATETIME_DIGITIZED));
+        dateTagMap.put(ExifThumbnailDirectory.class, List.of(ExifThumbnailDirectory.TAG_DATETIME, ExifThumbnailDirectory.TAG_DATETIME_ORIGINAL, ExifThumbnailDirectory.TAG_DATETIME_DIGITIZED));
+        dateTagMap.put(GpsDirectory.class, List.of(GpsDirectory.TAG_DATETIME, GpsDirectory.TAG_DATETIME_ORIGINAL, GpsDirectory.TAG_DATETIME_DIGITIZED));
+        dateTagMap.put(IptcDirectory.class, List.of(IptcDirectory.TAG_DATE_SENT, IptcDirectory.TAG_DATE_CREATED, IptcDirectory.TAG_RELEASE_DATE, IptcDirectory.TAG_REFERENCE_DATE, IptcDirectory.TAG_EXPIRATION_DATE, IptcDirectory.TAG_DIGITAL_DATE_CREATED));
+        dateTagMap.put(QuickTimeDirectory.class, List.of(QuickTimeDirectory.TAG_CREATION_TIME, QuickTimeDirectory.TAG_MODIFICATION_TIME));
+        dateTagMap.put(Mp4Directory.class, List.of(Mp4Directory.TAG_CREATION_TIME, Mp4Directory.TAG_MODIFICATION_TIME));
+        dateTagMap.put(PngDirectory.class, List.of(PngDirectory.TAG_LAST_MODIFICATION_TIME));
+        dateTagMap.put(WavDirectory.class, List.of(WavDirectory.TAG_DATE_CREATED));
+    }
+
     /**
      * read the date from a file, if it's a jpg or mp4 file with date metadata
      * return this value. otherwise return the last modified date
@@ -111,14 +141,16 @@ public class DateExtractor {
 
         Date minDate = null;
         for(Directory dir : md.getDirectories()) {
-            if(dir.getName().equals("File")) continue;
-            for(Tag tag : dir.getTags()) {
-                if(tag.getDescription().length() < 16) continue;
-                Date date = dir.getDate(tag.getTagType(), TimeZone.getDefault());
-                if(date != null) {
-                    if(minDate == null) minDate = date;
-                    else if(date.compareTo(minDate) < 0) minDate = date;
-                }
+            List<Integer> dateTags = dateTagMap.get(dir.getClass());
+            if(dateTags == null) continue;
+            for(int tag : dateTags) {
+                Date date = dir.getDate(tag, TimeZone.getDefault());
+                if(date == null) continue;
+                LocalDateTime ldt = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                if(ldt.getYear() < 1970 || ldt.getYear() > currentYear) continue;
+
+                if(minDate == null) minDate = date;
+                else if(date.compareTo(minDate) < 0) minDate = date;
             }
         }
 
