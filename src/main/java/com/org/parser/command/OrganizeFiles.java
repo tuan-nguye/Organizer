@@ -61,11 +61,15 @@ public class OrganizeFiles extends Command {
 
         ICopy copyOperation;
         boolean move = optionMap.get("move").isEnabled();
-        boolean skip = optionMap.get("skip").isEnabled();
-        if(move && skip) copyOperation = new Move();
-        else if(move) copyOperation = new MoveReplace();
-        else if(skip) copyOperation = new CopyReplace();
-        else copyOperation = new Copy();
+        boolean replace = optionMap.get("replace").isEnabled();
+
+        if(move) {
+            if(replace) copyOperation = new MoveReplace();
+            else copyOperation = new Move();
+        } else {
+            if(replace) copyOperation = new CopyReplace();
+            else copyOperation = new Copy();
+        }
         int folderSize = Integer.parseInt(config.getProperties().getProperty("folderSize"));
         Organizer thresholdOrganizer = new ThresholdOrganizer(copyOperation, folderSize, destination);
 

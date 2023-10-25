@@ -4,8 +4,6 @@ import com.org.parser.command.*;
 import com.org.parser.option.FlagOption;
 import com.org.parser.option.Option;
 import com.org.parser.option.ValueOption;
-import com.org.parser.command.*;
-import com.org.parser.option.*;
 import com.org.util.FileTools;
 
 import java.io.File;
@@ -63,9 +61,9 @@ public class Configuration {
             .setDescription("repair the structure if there are any errors");
 
     /* available options */
-    Option skipOption = new FlagOption()
-            .setName("skip")
-            .setDescription("skip files that already exist instead of replacing them");
+    Option replaceOption = new FlagOption()
+            .setName("replace")
+            .setDescription("replace files that already exist instead of skipping them");
 
     Option moveOption = new FlagOption()
             .setName("move")
@@ -97,7 +95,7 @@ public class Configuration {
 
     public Map<String, Option> allOptions() {
         Map<String, Option> allOptions = new HashMap<>();
-        allOptions.put(skipOption.getName(), skipOption);
+        allOptions.put(replaceOption.getName(), replaceOption);
         allOptions.put(moveOption.getName(), moveOption);
         allOptions.put(fileExtensionsOption.getName(), fileExtensionsOption);
         return allOptions;
