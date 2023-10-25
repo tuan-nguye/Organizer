@@ -2,7 +2,6 @@ package com.org.util.consistency;
 
 import com.org.observer.Observer;
 import com.org.observer.Subject;
-import com.org.organizer.ThresholdOrganizer;
 import com.org.organizer.copy.ICopy;
 import com.org.organizer.copy.Move;
 import com.org.organizer.copy.MoveReplace;
@@ -10,6 +9,7 @@ import com.org.parser.Configuration;
 import com.org.util.FileTools;
 import com.org.util.graph.FileGraph;
 import com.org.util.graph.FileGraphFactory;
+import com.org.util.graph.FileGraphOperation;
 import com.org.util.time.DateExtractor;
 import com.org.util.time.DateIterator;
 import com.org.util.time.DateTools;
@@ -22,25 +22,21 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class ModelFixer implements Subject<Integer> {
-    private FileGraph fileGraph;
     private int threshold;
-    private FileGraph.Node errorNode;
 
     // subject/observer stuff, count number of errors fixed
     private List<Observer> obs = new ArrayList<>();
     private int errorsFixed = 0;
     private Map<FileGraph.Node, Integer> folderErrorCountMap = new HashMap<>();
+    FileGraphOperation fileGraphOperation;
+    FileGraph fileGraph;
+    String rootPath;
 
     public ModelFixer(Configuration config) {
-        fileGraph = FileGraphFactory.get(config.PROPERTY_FILE_PATH_STRING);
         threshold = Integer.parseInt(config.getProperties().getProperty("folderSize"));
-        FileGraph.Node root = fileGraph.getRoot();
-        String errorFolderPath = root.path + File.separator + Configuration.ERROR_FOLDER_NAME;
-        errorNode = root.children.get(errorFolderPath);
-        if(errorNode == null) {
-            new File(errorFolderPath).mkdir();
-            fileGraph.update(root);
-        }
+        rootPath = config.PROPERTY_FILE_PATH_STRING;
+        fileGraph = FileGraphFactory.get(rootPath);
+        fileGraphOperation = new FileGraphOperation(fileGraph);
     }
 
     public void fixStructure(Map<ModelError, List<FileGraph.Node>> errors) {
@@ -62,11 +58,7 @@ public class ModelFixer implements Subject<Integer> {
 
     private void fixErrorFolder(Map<ModelError, List<FileGraph.Node>> errors) {
         if(errors.get(ModelError.ERROR_FOLDER_MISSING).size() == 0) return;
-        FileGraph.Node root = fileGraph.getRoot();
-        String errorFolderPath = root.path + File.separator + Configuration.ERROR_FOLDER_NAME;
-        new File(errorFolderPath).mkdir();
-        fileGraph.update(root);
-        errorNode = root.children.get(errorFolderPath);
+        fileGraphOperation.addFolder(fileGraph.getRoot(), "error");
     }
 
     private Set<FileGraph.Node> fixFolders(Map<ModelError, List<FileGraph.Node>> errors) {
@@ -76,13 +68,13 @@ public class ModelFixer implements Subject<Integer> {
         for(FileGraph.Node fn : toRestore) {
             if(fn.depth >= 6) continue;
             String original = fn.path;
-            List<FileGraph.Node> path = getPathToNode(fn);
+            List<FileGraph.Node> path = fileGraphOperation.getPathToNode(fn);
             boolean restored = restoreFolder(fn, path, faultyFolders);
 
             if(restored) updateFolders();
             if(!fn.path.equals(original)) {
                 updateFolders();
-                path = getPathToNode(fn);
+                //path = fileGraphOperation.getPathToNode(fn);
                 for(FileGraph.Node n : path) {
                     if(faultyFolders.remove(n)) {
                         errorsFixed += folderErrorCountMap.getOrDefault(n, 0);
@@ -100,7 +92,7 @@ public class ModelFixer implements Subject<Integer> {
     private Set<FileGraph.Node> getFaultyFolders(Map<ModelError, List<FileGraph.Node>> errors) {
         Set<FileGraph.Node> faultyFolders = new HashSet<>();
         for(FileGraph.Node fn : errors.get(ModelError.INVALID_FOLDER_STRUCTURE)) {
-            List<FileGraph.Node> path = getPathToNode(fn);
+            List<FileGraph.Node> path = fileGraphOperation.getPathToNode(fn);
             faultyFolders.addAll(path);
         }
 
@@ -170,26 +162,6 @@ public class ModelFixer implements Subject<Integer> {
     /**
      *
      * @param node
-     * @return returns the path from root to given node in a list
-     */
-    private List<FileGraph.Node> getPathToNode(FileGraph.Node node) {
-        String[] folders = node.path.substring(fileGraph.getRoot().path.length()+1).split(Pattern.quote(File.separator));
-        List<FileGraph.Node> path = new ArrayList<>();
-        FileGraph.Node temp = fileGraph.getRoot();
-        StringBuilder key = new StringBuilder(temp.path);
-        path.add(temp);
-        for(int i = 0; i < folders.length; i++) {
-            key.append(File.separator).append(folders[i]);
-            temp = temp.children.get(key.toString());
-            path.add(temp);
-        }
-
-        return path;
-    }
-
-    /**
-     *
-     * @param node
      * @return true if there are files in the folder, and they are
      * all from the same date until the node's depth
      */
@@ -234,7 +206,7 @@ public class ModelFixer implements Subject<Integer> {
         String prefix = folderName.substring(0, folderName.lastIndexOf('_'));
         for(FileGraph.Node sibling : parent.children.values()) {
             if(faultyNodes.contains(sibling)) continue;
-            String siblingFolder = FileTools.getNameWithoutPrefix(fileGraph.getRoot().path, sibling.path);
+            String siblingFolder = FileTools.getNameWithoutPrefix(rootPath, sibling.path);
             if(!siblingFolder.startsWith(prefix)) {
                 return false;
             }
@@ -251,7 +223,7 @@ public class ModelFixer implements Subject<Integer> {
      * is "2008"
      */
     private String correctPreviousFolderName(String folderPath) {
-        String folderName = FileTools.getNameWithoutPrefix(fileGraph.getRoot().path, folderPath);
+        String folderName = FileTools.getNameWithoutPrefix(rootPath, folderPath);
         int idxUnderscore = folderName.lastIndexOf("_");
         if(idxUnderscore != -1) folderName = folderName.substring(0, idxUnderscore);
         else folderName = "";
@@ -276,7 +248,7 @@ public class ModelFixer implements Subject<Integer> {
     }
 
     private void updateFolders(FileGraph.Node node, StringBuilder path) {
-        String folderName = FileTools.getNameWithoutPrefix(fileGraph.getRoot().path, node.path);
+        String folderName = FileTools.getNameWithoutPrefix(rootPath, node.path);
         int originalLength = path.length();
         if(!folderName.isEmpty()) path.append(File.separator).append(folderName);
         node.path = path.toString();
@@ -329,10 +301,9 @@ public class ModelFixer implements Subject<Integer> {
             notifyObservers();
         }
         System.out.println("reorganizing...");
-        ThresholdOrganizer org = new ThresholdOrganizer(new Move(), threshold, fileGraph.getRoot().path);
         foldersAboveThreshold.addAll(errors.get(ModelError.FOLDER_ABOVE_THRESHOLD));
         for(FileGraph.Node folder : foldersAboveThreshold) {
-            if(folder.fileCount > threshold) org.reorganize(folder);
+            if(folder.fileCount > threshold) fileGraphOperation.reorganize(folder, threshold);
             errorsFixed += folderErrorCountMap.getOrDefault(folder, 0);
             folderErrorCountMap.remove(folder);
             notifyObservers();
@@ -344,99 +315,17 @@ public class ModelFixer implements Subject<Integer> {
         ICopy move = new MoveReplace();
 
         for(File file : folder.listFiles(f -> f.isFile())) {
-            if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
-            LocalDateTime ldt = DateExtractor.getDate(file);
-            FileGraph.Node correctNode = getDirectory(ldt);
-
-            String fileName = FileTools.chooseFileName(correctNode.path, file.getName(), ldt);
-            Path from = file.toPath(), to = Path.of(correctNode.path, fileName);
-            if(from.equals(to)) continue;
-
-            boolean duplicate = to.toFile().exists();
-            try {
-                move.execute(from, to);
-                DateExtractor.markFile(to.toFile(), ldt);
-                if(!duplicate) {
-                    correctNode.fileCount++;
-                    if(correctNode.fileCount > threshold) foldersAboveThreshold.add(correctNode);
-                }
-            } catch(IOException ioe) {
+            FileGraph.Node correctNode = fileGraphOperation.copyFile(move, file);
+            if(correctNode == null) {
                 System.out.println("modelfixer: error when moving file to correct location");
-                ioe.printStackTrace();
+            } else {
+                if(correctNode.fileCount > threshold) foldersAboveThreshold.add(correctNode);
             }
+
         }
     }
-
-    private FileGraph.Node getDirectory(LocalDateTime ldt) {
-        FileGraph.Node node;
-        if(ldt == null) node = errorNode;
-        else node = fileGraph.getNode(ldt);
-        new File(node.path).mkdir();
-        return node;
-    }
-
-    /**
-     * reduce the structure if it shouldnt be split
-     * if the number of files in its children is not above the threshold
-     * then it shouldn't be split, so copy all files in the child folders
-     * into itself then delete children
-     * dfs post order
-     */
     public void reduceStructure() {
-        reduceStructure(fileGraph.getRoot());
-    }
-
-    private void reduceStructure(FileGraph.Node node) {
-        if(node == errorNode) return;
-
-        if(node.leaf) {
-            // nothing to do
-        } else {
-            int numFiles = 0;
-            boolean allLeaves = true;
-
-            Set<Map.Entry<String, FileGraph.Node>> entries = new HashSet<>(node.children.entrySet());
-            for(Map.Entry<String, FileGraph.Node> e : entries) {
-                FileGraph.Node child = e.getValue();
-                if(child == errorNode) continue;
-                reduceStructure(child);
-                numFiles += child.fileCount;
-                allLeaves &= child.leaf;
-                if(child.leaf && child.fileCount == 0) {
-                    String key = e.getKey();
-                    node.children.remove(key);
-                    File emptyChild = new File(child.path);
-                    if(!emptyChild.delete()) throw new IllegalStateException("couldnt delete empty child: " + child + ", " + errorNode);
-                }
-            }
-
-            if(allLeaves && numFiles <= threshold) {
-                ICopy moveOp = new MoveReplace();
-                Path currDir = Path.of(node.path);
-                for(FileGraph.Node child : node.children.values()) {
-                    File childFolder = new File(child.path);
-                    for(File f : childFolder.listFiles()) {
-                        LocalDateTime ldt = DateExtractor.getDate(f);
-                        String fileName = FileTools.chooseFileName(node.path, f.getName(), ldt);
-                        Path destinationPath = currDir.resolve(fileName);
-                        try {
-                            moveOp.execute(f.toPath(), destinationPath);
-                            DateExtractor.markFile(destinationPath.toFile(), ldt);
-                        } catch(IOException ioe) {
-                            System.err.println("error moving during restructuring: " + f.getAbsolutePath());
-                            ioe.printStackTrace();
-                        }
-                    }
-                    if(!childFolder.delete()) throw new IllegalStateException("cant delete folder after moving all files: " + child.path);
-
-                }
-
-                node.children.clear();
-                node.fileCount = numFiles;
-            }
-
-            if(node.children.isEmpty()) node.leaf = true;
-        }
+        fileGraphOperation.reduceStructure(threshold);
     }
 
     @Override

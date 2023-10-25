@@ -35,7 +35,6 @@ public class ThresholdOrganizer extends Organizer {
             incrementCounter();
             notifyObservers();
         } else {
-            if(file.getAbsolutePath().equals(errorFolderPath)) return;
             for(File child : file.listFiles()) {
                 dfs(child);
             }
@@ -43,35 +42,10 @@ public class ThresholdOrganizer extends Organizer {
     }
 
     protected boolean copyFile(File f) {
-        if(!f.exists()) return false;
-        if(f.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) return false;
-        LocalDateTime dateTime = DateExtractor.getDate(f);
-
-        FileGraph.Node node = getDirectory(dateTime);
-        String fileName = FileTools.chooseFileName(node.path, f.getName(), dateTime);
-        Path path = Path.of(node.path, fileName);
-
-        if(path == null) return false;
-        boolean duplicate = path.toFile().exists();
-        try {
-            operation.execute(f.toPath(), path);
-            DateExtractor.markFile(path.toFile(), dateTime);
-        } catch(IOException ioe) {
-            return false;
-        }
-
-        if(duplicate) return true;
-        node.fileCount++;
+        FileGraph.Node node = fileGraphOperation.copyFile(operation, f);
+        if(node == null) return false;
         reorganize(node);
         return true;
-    }
-
-    protected FileGraph.Node getDirectory(LocalDateTime dateTime) {
-        FileGraph.Node node;
-        if(dateTime == null) node = errorNode;
-        else node = fileGraph.getNode(dateTime);
-        new File(node.path).mkdir();
-        return node;
     }
 
     /**
@@ -81,28 +55,6 @@ public class ThresholdOrganizer extends Organizer {
      * @param node
      */
     public void reorganize(FileGraph.Node node) {
-        if(node.depth == 6 ||node.fileCount <= threshold || node == errorNode) return;
-        node.leaf = false;
-        File directory = new File(node.path);
-
-        for(File file : directory.listFiles(a -> a.isFile())) {
-            if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
-            LocalDateTime ldt = DateExtractor.getDate(file);
-            FileGraph.Node nextNode = getDirectory(ldt);
-            Path path = Path.of(nextNode.path);
-
-            try {
-                move.execute(file.toPath(), path.resolve(file.getName()));
-                nextNode.fileCount++;
-            } catch(IOException ioe) {
-                System.err.println("error reorganizing " + file.getName());
-                ioe.printStackTrace();
-            }
-        }
-
-        node.fileCount = 0;
-        for(FileGraph.Node child : node.children.values()) {
-            reorganize(child);
-        }
+        fileGraphOperation.reorganize(node, threshold);
     }
 }

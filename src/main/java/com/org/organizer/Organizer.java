@@ -6,6 +6,7 @@ import com.org.parser.Configuration;
 import com.org.util.graph.FileGraphFactory;
 import com.org.observer.Observer;
 import com.org.util.graph.FileGraph;
+import com.org.util.graph.FileGraphOperation;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,23 +18,13 @@ public abstract class Organizer implements Subject<Integer> {
     private List<Observer> obs = new ArrayList<>();
     private int count = 0;
     protected ICopy operation;
-    protected FileGraph fileGraph;
-    protected String errorFolderPath;
-    protected FileGraph.Node errorNode;
+    protected FileGraphOperation fileGraphOperation;
 
     private Set<String> allowedFileExtensions = null;
 
     public Organizer(ICopy operation, String repoPath) {
         this.operation = operation;
-        fileGraph = FileGraphFactory.get(repoPath);
-        errorFolderPath = repoPath + File.separator + Configuration.ERROR_FOLDER_NAME;
-        errorNode = fileGraph.getRoot();
-        File errorFolder = new File(errorFolderPath);
-        if(!errorFolder.exists()) {
-            errorFolder.mkdir();
-            fileGraph.update(fileGraph.getRoot());
-        }
-        errorNode = errorNode.children.get(errorFolderPath);
+        fileGraphOperation = new FileGraphOperation(FileGraphFactory.get(repoPath));
     }
 
     public abstract void copyAndOrganize(String source);

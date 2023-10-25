@@ -242,7 +242,7 @@ public class FileTools {
     }
 
     public static String getNameWithoutPrefix(String prefix, String path) {
-        if(path == prefix) return "";
+        if(path.equals(prefix)) return "";
         return path.substring(path.lastIndexOf(File.separator)+1);
     }
 

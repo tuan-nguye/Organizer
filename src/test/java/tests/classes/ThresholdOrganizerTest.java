@@ -136,6 +136,7 @@ public class ThresholdOrganizerTest {
         assertNotEquals(null, path);
         FileTools.delete(new File(path));
 
+        fileGraph.update(fileGraph.getRoot());
     }
 
     private String search(File file, String fileName) {
