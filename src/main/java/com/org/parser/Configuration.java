@@ -60,6 +60,10 @@ public class Configuration {
             .setName("repair")
             .setDescription("repair the structure if there are any errors");
 
+    Command markCommand = new MarkCommand()
+            .setName("mark")
+            .setDescription("read the date from all files in the repo and mark them to improve performance");
+
     /* available options */
     Option replaceOption = new FlagOption()
             .setName("replace")
@@ -94,6 +98,7 @@ public class Configuration {
         allCommands.put(deleteRepository.getName(), deleteRepository);
         allCommands.put(checkCommand.getName(), checkCommand);
         allCommands.put(repairCommand.getName(), repairCommand);
+        allCommands.put(markCommand.getName(), markCommand);
         return allCommands;
     }
 

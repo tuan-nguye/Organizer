@@ -2,12 +2,8 @@ package com.org.parser.command;
 
 import com.org.parser.CommandException;
 import com.org.parser.Configuration;
-import com.org.util.FileTools;
 import com.org.util.consistency.Checker;
-import com.org.util.graph.FileGraph;
-import com.org.util.graph.FileGraphFactory;
 
-import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
@@ -21,13 +17,14 @@ public class PrintStatus extends Command {
 
     @Override
     public void executeCommand(String[] args, Configuration config) {
-        if(!Checker.validRepository(config.PROPERTY_FILE_PATH_STRING)) {
-            System.out.println("not an organizer repository");
+        try {
+            Checker.checkRepository(config.PROPERTY_FILE_PATH_STRING);
+        } catch(CommandException ce) {
+            System.err.println("not a valid repository");
             return;
-        } else {
-            System.out.println("organizer repository initialized\n");
         }
 
+        System.out.println("valid repository");
         Properties properties = config.getProperties();
 
         System.out.println("Properties:");

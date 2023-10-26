@@ -317,7 +317,8 @@ public class ModelFixer implements Subject<Integer> {
         for(File file : folder.listFiles(f -> f.isFile())) {
             FileGraph.Node correctNode = fileGraphOperation.copyFile(move, file);
             if(correctNode == null) {
-                System.out.println("modelfixer: error when moving file to correct location");
+                if(!file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING))
+                    System.err.println("modelfixer: error when moving file to correct location or duplicate");
             } else {
                 if(correctNode.fileCount > threshold) foldersAboveThreshold.add(correctNode);
             }

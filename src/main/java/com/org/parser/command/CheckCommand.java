@@ -16,9 +16,7 @@ import java.util.Map;
 public class CheckCommand extends Command {
     @Override
     public void validateConfiguration(String[] args, Configuration config) throws CommandException {
-        if(!Checker.validRepository(config.PROPERTY_FILE_PATH_STRING)) {
-            throw new CommandException("can't check uninitialized repository");
-        }
+        Checker.checkRepository(config.PROPERTY_FILE_PATH_STRING);
     }
 
     @Override

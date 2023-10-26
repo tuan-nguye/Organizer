@@ -9,8 +9,6 @@ import com.org.parser.option.Option;
 import com.org.parser.option.ValueOption;
 import com.org.util.consistency.Checker;
 import com.org.util.FileTools;
-import com.org.util.graph.FileGraph;
-import com.org.util.graph.FileGraphFactory;
 import com.org.util.time.DateExtractor;
 import com.org.view.ProgressBar;
 
@@ -27,9 +25,7 @@ public class OrganizeFiles extends Command {
             throw new CommandException("invalid number of arguments, needs 1");
         } // check if source and destination exist, destination is valid repo
 
-        if(!Checker.validRepository(config.PROPERTY_FILE_PATH_STRING)) {
-            throw new CommandException(config.PROPERTY_FILE_PATH_STRING + " is not a repository");
-        }
+        Checker.checkRepository(config.PROPERTY_FILE_PATH_STRING);
     }
 
     @Override

@@ -14,9 +14,7 @@ public class SetProperty extends Command {
             throw new CommandException("property arguments missing");
         }
 
-        if(!Checker.validRepository(config.PROPERTY_FILE_PATH_STRING)) {
-            throw new CommandException("can't set property, repository not initialized");
-        }
+        Checker.checkRepository(config.PROPERTY_FILE_PATH_STRING);
 
         String property = args[0].substring(0, args[0].indexOf('='));
 
