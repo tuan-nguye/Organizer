@@ -14,10 +14,10 @@ import com.org.util.time.DateExtractor;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalField;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -121,5 +121,29 @@ public class DateExtractorTest {
 
         // clean up
         FileTools.delete(repo);
+    }
+
+    @Test
+    public void testDateFromFileName() {
+        String fileName = "Screenshot_2022-02-05-05-42-25-713_com.miui.gallery";
+        LocalDateTime ldtExtr = DateExtractor.getDate(fileName).truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime ldtCorrect = LocalDateTime.of(2022, 2, 5, 5, 42, 25);
+        assertEquals(ldtCorrect, ldtExtr);
+    }
+
+    @Test
+    public void test() {
+        File file = new File("E:\\backup\\fotos_mama\\unsortiert\\2023_feb_20");
+        dfs(file);
+    }
+
+    private void dfs(File file) {
+        if(file.isFile()) {
+            System.out.println(DateExtractor.fileIsMarked(file) + ", " + DateExtractor.getDate(file));
+        } else {
+            for(File f : file.listFiles()) {
+                dfs(f);
+            }
+        }
     }
 }

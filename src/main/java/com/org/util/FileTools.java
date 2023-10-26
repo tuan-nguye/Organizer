@@ -248,9 +248,10 @@ public class FileTools {
 
     public static String chooseFileName(String path, String fileName, LocalDateTime originalTime) {
         File file = new File(path, fileName);
-        LocalDateTime ldt = DateExtractor.getDate(file);
 
-        if(!file.exists() || (ldt == null && originalTime == null) || ldt.truncatedTo(ChronoUnit.SECONDS).equals(originalTime.truncatedTo(ChronoUnit.SECONDS))) return fileName;
+        if(!file.exists()) return fileName;
+        LocalDateTime ldt = DateExtractor.getDate(file);
+        if((ldt == null && originalTime == null) || ldt.truncatedTo(ChronoUnit.SECONDS).equals(originalTime.truncatedTo(ChronoUnit.SECONDS))) return fileName;
 
         int idxDot = fileName.lastIndexOf('.');
         String name = fileName.substring(0, idxDot);

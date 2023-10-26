@@ -27,9 +27,10 @@ public class FileGraphOperation {
         }
     }
 
+    // TODO update numFilesSubTree and sizeTotal
     public FileGraph.Node copyFile(ICopy op, File file) {
         if(!file.exists()) return null;
-        if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) return null;
+        if(file.isHidden() && file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) return null;
         LocalDateTime dateTime = DateExtractor.getDate(file);
 
         FileGraph.Node node = getDirectory(dateTime);
@@ -67,20 +68,12 @@ public class FileGraphOperation {
         if(node.depth == 6 ||node.fileCount <= threshold || node.path.equals(errorFolderPath)) return;
         node.leaf = false;
         File directory = new File(node.path);
+        ICopy moveReplace = new MoveReplace();
 
         for(File file : directory.listFiles(a -> a.isFile())) {
-            if(file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) continue;
-            LocalDateTime ldt = DateExtractor.getDate(file);
-            FileGraph.Node nextNode = getDirectory(ldt);
-            Path path = Path.of(nextNode.path);
-
-            try {
-                ICopy move = new Move();
-                move.execute(file.toPath(), path.resolve(file.getName()));
-                nextNode.fileCount++;
-            } catch(IOException ioe) {
-                System.err.println("error reorganizing " + file.getName());
-                ioe.printStackTrace();
+            FileGraph.Node destNode = copyFile(moveReplace, file);
+            if(destNode == null && !file.getName().equals(Configuration.PROPERTY_FILE_NAME_STRING)) {
+                System.err.println("error during reorganizing");
             }
         }
 
@@ -134,10 +127,12 @@ public class FileGraphOperation {
                     for(File f : childFolder.listFiles()) {
                         LocalDateTime ldt = DateExtractor.getDate(f);
                         String fileName = FileTools.chooseFileName(node.path, f.getName(), ldt);
-                        Path destinationPath = currDir.resolve(fileName);
+                        Path from = f.toPath(), to = currDir.resolve(fileName);
+                        boolean duplicate = to.toFile().exists();
                         try {
-                            moveOp.execute(f.toPath(), destinationPath);
-                            DateExtractor.markFile(destinationPath.toFile(), ldt);
+                            moveOp.execute(from, to);
+                            DateExtractor.markFile(to.toFile(), ldt);
+                            if(duplicate) numFiles--;
                         } catch(IOException ioe) {
                             System.err.println("error moving during restructuring: " + f.getAbsolutePath());
                             ioe.printStackTrace();

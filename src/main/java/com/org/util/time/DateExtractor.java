@@ -4,8 +4,10 @@ package com.org.util.time;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.imaging.quicktime.QuickTimeMetadataReader;
+import com.drew.lang.annotations.Nullable;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
+import com.drew.metadata.StringValue;
 import com.drew.metadata.Tag;
 import com.drew.metadata.avi.AviDirectory;
 import com.drew.metadata.eps.EpsDirectory;
@@ -19,10 +21,16 @@ import com.org.util.FileTools;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DateExtractor {
     private static Set<String> supportedFileExtensions = new HashSet<String>(
@@ -125,6 +133,7 @@ public class DateExtractor {
             }
         }
 
+        if(ldt == null) ldt = DateExtractor.getDate(file.getName());
         if(ldt == null) ldt = FileTools.dateTime(file.lastModified());
         return ldt;
     }
@@ -220,5 +229,55 @@ public class DateExtractor {
         }
 
         return h;
+    }
+
+    /**
+     * attempts to parse a localdatetime from an input string
+     * only supports the pattern 'yyyy MM dd HH mm ss', if all
+     * these values are in the right order and contained in the
+     * name
+     * @param str
+     * @return
+     */
+    public static LocalDateTime getDate(String str) {
+        String[] nums = str.split("\\D+");
+        List<String> timeUnits = new ArrayList<>();
+        boolean first = true;
+        int i = 0;
+        while(i < nums.length) {
+            if(first) {
+                if(nums[i].length() < 4) {
+                    i++;
+                } else {
+                    timeUnits.add(nums[i].substring(0, 4));
+                    nums[i] = nums[i].substring(4);
+                    first = false;
+                }
+            } else {
+                if(nums[i].length() < 2) {
+                    i++;
+                } else {
+                    timeUnits.add(nums[i].substring(0, 2));
+                    nums[i] = nums[i].substring(2);
+                }
+
+            }
+        }
+        if(timeUnits.size() < 6) return null;
+        timeUnits = timeUnits.subList(0, 6);
+        String strDate = timeUnits.toString();
+        strDate = strDate.substring(1, strDate.length()-1);
+        System.out.println(strDate);
+        String pattern = "yyyy, MM, dd, HH, mm, ss";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+
+        LocalDateTime ldt = null;
+        try {
+            ldt = LocalDateTime.parse(strDate, formatter);
+        } catch(Exception e) {
+            //System.err.println("error during parsing: " + e.getMessage());
+        }
+
+        return ldt;
     }
 }
