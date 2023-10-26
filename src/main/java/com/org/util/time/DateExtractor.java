@@ -183,7 +183,7 @@ public class DateExtractor {
         }
 
         if(minDate == null) {
-            if(quickTime) throw new Exception("file is probably corrupted");
+            if(quickTime) throw new Exception("file might be corrupted");
             else return null;
         }
         return LocalDateTime.ofInstant(minDate.toInstant(), ZoneId.systemDefault());

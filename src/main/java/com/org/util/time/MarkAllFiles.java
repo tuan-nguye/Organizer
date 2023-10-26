@@ -17,6 +17,7 @@ public class MarkAllFiles implements Subject<Integer> {
     }
 
     public void execute() {
+        markedFilesCount = 0;
         execute(new File(repoPath));
     }
 
