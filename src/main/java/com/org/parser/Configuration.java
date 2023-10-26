@@ -62,7 +62,8 @@ public class Configuration {
 
     Command markCommand = new MarkCommand()
             .setName("mark")
-            .setDescription("read the date from all files in the repo and mark them to improve performance");
+            .setDescription("read the date from all files in the current or the given directory and mark them to improve performance")
+            .setCommandFormat("mark [/optional/directory]");
 
     /* available options */
     Option replaceOption = new FlagOption()
