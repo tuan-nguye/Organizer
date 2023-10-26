@@ -49,11 +49,16 @@ public class FileGraphOperation {
         }
 
         if(!duplicate) {
-            node.fileCount++;
+            updateNode(node, file);
             return node;
         } else {
             return null;
         }
+    }
+
+    private void updateNode(FileGraph.Node node, File file) {
+        node.fileCount++;
+        node.sizeTotal += file.length();
     }
 
     private FileGraph.Node getDirectory(LocalDateTime dateTime) {
@@ -132,7 +137,10 @@ public class FileGraphOperation {
                         try {
                             moveOp.execute(from, to);
                             DateExtractor.markFile(to.toFile(), ldt);
-                            if(duplicate) numFiles--;
+                            if(duplicate) {
+                                numFiles--;
+                                node.sizeTotal -= f.length();
+                            }
                         } catch(IOException ioe) {
                             System.err.println("error moving during restructuring: " + f.getAbsolutePath());
                             ioe.printStackTrace();
@@ -144,6 +152,7 @@ public class FileGraphOperation {
 
                 node.children.clear();
                 node.fileCount = numFiles;
+                node.fileCountSubTree = numFiles;
             }
 
             if(node.children.isEmpty()) node.leaf = true;

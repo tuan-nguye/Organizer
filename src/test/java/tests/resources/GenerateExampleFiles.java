@@ -1,6 +1,8 @@
 package tests.resources;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class GenerateExampleFiles {
@@ -29,6 +31,11 @@ public class GenerateExampleFiles {
             File exampleFile = new File(testIn, "test"+i+".txt");
             try {
                 exampleFile.createNewFile();
+                FileWriter fileWriter = new FileWriter(exampleFile);
+                BufferedWriter buffWriter = new BufferedWriter(fileWriter);
+                buffWriter.write(".".repeat(i));
+                buffWriter.close();
+                fileWriter.close();
             } catch(IOException ioe) {
                 ioe.printStackTrace();
             }

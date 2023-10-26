@@ -28,7 +28,7 @@ public class FileGraph {
 
         @Override
         public String toString() {
-            return String.format("%s, files: %d, leaf: %b", path, fileCount, leaf);
+            return String.format("%s, files: %d, filesTotal: %d, size: %d, leaf: %b", path, fileCount, fileCountSubTree, sizeTotal, leaf);
         }
     }
 
