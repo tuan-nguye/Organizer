@@ -125,25 +125,9 @@ public class DateExtractorTest {
 
     @Test
     public void testDateFromFileName() {
-        String fileName = "Screenshot_2022-02-05-05-42-25-713_com.miui.gallery";
+        String fileName = "Screenshot_2022-02-05-05-42-25-713_com.miui.gallery.jpg";
         LocalDateTime ldtExtr = DateExtractor.getDate(fileName).truncatedTo(ChronoUnit.SECONDS);
         LocalDateTime ldtCorrect = LocalDateTime.of(2022, 2, 5, 5, 42, 25);
         assertEquals(ldtCorrect, ldtExtr);
-    }
-
-    @Test
-    public void test() {
-        File file = new File("E:\\backup\\fotos_mama\\unsortiert\\2023_feb_20");
-        dfs(file);
-    }
-
-    private void dfs(File file) {
-        if(file.isFile()) {
-            System.out.println(DateExtractor.fileIsMarked(file) + ", " + DateExtractor.getDate(file));
-        } else {
-            for(File f : file.listFiles()) {
-                dfs(f);
-            }
-        }
     }
 }

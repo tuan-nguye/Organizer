@@ -76,6 +76,10 @@ public class Configuration {
             .setDescription("constrain allowed file extensions")
             .setOptionFormat("--fileExtensions=[jpg,jpeg,png,txt,...]");
 
+    Option ignoreMarkOption = new FlagOption()
+            .setName("ignoreMark")
+            .setDescription("ignores the mark set on the file and read the date from metadata instead");
+
     public Configuration() {
     }
 
@@ -98,6 +102,7 @@ public class Configuration {
         allOptions.put(replaceOption.getName(), replaceOption);
         allOptions.put(moveOption.getName(), moveOption);
         allOptions.put(fileExtensionsOption.getName(), fileExtensionsOption);
+        allOptions.put(ignoreMarkOption.getName(), ignoreMarkOption);
         return allOptions;
     }
 

@@ -11,6 +11,7 @@ import com.org.util.consistency.Checker;
 import com.org.util.FileTools;
 import com.org.util.graph.FileGraph;
 import com.org.util.graph.FileGraphFactory;
+import com.org.util.time.DateExtractor;
 import com.org.view.ProgressBar;
 
 import java.io.File;
@@ -60,6 +61,7 @@ public class OrganizeFiles extends Command {
         System.out.printf("file count: %d, size: %.2f%s\n", fileCount, formattedSize, sizeUnit[unit]);
         ProgressBar bar = new ProgressBar(20, fileCount);
 
+        // get the IO operation
         ICopy copyOperation;
         boolean move = optionMap.get("move").isEnabled();
         boolean replace = optionMap.get("replace").isEnabled();
@@ -74,6 +76,11 @@ public class OrganizeFiles extends Command {
             if(replace) copyOperation = new CopyReplace();
             else copyOperation = new Copy();
         }
+
+        // get the ignoreMark option
+        boolean ignoreMark = optionMap.get("ignoreMark").isEnabled();
+        DateExtractor.setIgnoreMark(ignoreMark);
+
         int folderSize = Integer.parseInt(config.getProperties().getProperty("folderSize"));
         Organizer thresholdOrganizer = new ThresholdOrganizer(copyOperation, folderSize, destination);
 

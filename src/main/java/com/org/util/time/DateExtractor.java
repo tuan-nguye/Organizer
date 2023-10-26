@@ -94,6 +94,8 @@ public class DateExtractor {
 
     private static final int currentYear = LocalDateTime.now().getYear();
 
+    private static boolean ignoreMark = false;
+
     private static Map<Class, List<Integer>> dateTagMap = new HashMap<>();
 
     static {
@@ -121,7 +123,7 @@ public class DateExtractor {
      */
     public static LocalDateTime getDate(File file) {
         if(!file.exists() || !file.isFile()) return null;
-        if(fileIsMarked(file)) return FileTools.dateTime(file.lastModified());
+        if(!ignoreMark && fileIsMarked(file)) return FileTools.dateTime(file.lastModified());
         LocalDateTime ldt = null;
         String ext = FileTools.getFileExtension(file);
 
@@ -151,6 +153,10 @@ public class DateExtractor {
         long mark = fileHash % 1000;
         long markedLastModified = epochMillis - (epochMillis%1000) + mark;
         file.setLastModified(markedLastModified);
+    }
+
+    public static void setIgnoreMark(boolean boolIgnoreMark) {
+        ignoreMark = boolIgnoreMark;
     }
 
     private static LocalDateTime extractDateFromMetadata(File file) throws Exception {
@@ -267,7 +273,6 @@ public class DateExtractor {
         timeUnits = timeUnits.subList(0, 6);
         String strDate = timeUnits.toString();
         strDate = strDate.substring(1, strDate.length()-1);
-        System.out.println(strDate);
         String pattern = "yyyy, MM, dd, HH, mm, ss";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
 
