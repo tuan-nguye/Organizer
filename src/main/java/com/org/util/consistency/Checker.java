@@ -23,7 +23,7 @@ public class Checker {
         else repo = new File(path, Configuration.PROPERTY_FILE_NAME_STRING);
         if(!repo.exists()) throw new CommandException("not a repository");
 
-        File errorFolder = new File(repo, Configuration.ERROR_FOLDER_NAME);
-        if(errorFolder.exists()) throw new CommandException("error folder is missing, run this command to fix:\n organizer repair");
+        File errorFolder = new File(repo.getParentFile(), Configuration.ERROR_FOLDER_NAME);
+        if(!errorFolder.exists()) throw new CommandException("error folder is missing, run this command to fix:\n organizer repair");
     }
 }

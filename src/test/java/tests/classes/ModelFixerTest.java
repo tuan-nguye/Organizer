@@ -1,5 +1,6 @@
 package tests.classes;
 
+import com.org.util.consistency.Checker;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import com.org.organizer.Organizer;

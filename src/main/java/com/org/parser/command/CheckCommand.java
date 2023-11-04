@@ -46,7 +46,7 @@ public class CheckCommand extends Command {
             if(!errorList.isEmpty()) {
                 System.out.println(me.name()+":");
                 for(FileGraph.Node folder : errorList) {
-                    System.out.println(folder.path);
+                    if(folder != null) System.out.println(folder.path);
                 }
             }
         }
