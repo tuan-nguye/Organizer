@@ -254,8 +254,9 @@ public class FileTools {
         if((ldt == null && originalTime == null) || ldt.truncatedTo(ChronoUnit.SECONDS).equals(originalTime.truncatedTo(ChronoUnit.SECONDS))) return fileName;
 
         int idxDot = fileName.lastIndexOf('.');
-        String name = fileName.substring(0, idxDot);
+        String name = getName(fileName.substring(0, idxDot));
         String ext = fileName.substring(idxDot+1);
+        if(originalTime != null) originalTime = originalTime.truncatedTo(ChronoUnit.SECONDS);
 
         StringBuilder nameBuilder = new StringBuilder();
         int count = 1;
@@ -264,11 +265,25 @@ public class FileTools {
             file = new File(path, nameBuilder.toString());
             if(file.exists()) ldt = DateExtractor.getDate(file);
             else break;
+            if(ldt != null) ldt = ldt.truncatedTo(ChronoUnit.SECONDS);
             if(ldt.equals(originalTime)) break;
             nameBuilder.setLength(0);
             count++;
         }
 
         return nameBuilder.toString();
+    }
+
+    private static String getName(String name) {
+        if(name.charAt(name.length()-1) != ')') return name;
+        int idxOpenBracket = name.lastIndexOf('(');
+        if(idxOpenBracket == -1) return name;
+        String num = name.substring(idxOpenBracket+1, name.length()-1);
+        try {
+            int i = Integer.parseInt(num);
+        } catch(NumberFormatException nfe) {
+            return name;
+        }
+        return name.substring(0, idxOpenBracket);
     }
 }

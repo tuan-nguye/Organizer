@@ -283,6 +283,7 @@ public class DateExtractor {
             //System.err.println("error during parsing: " + e.getMessage());
         }
 
+        if(ldt != null && ldt.getYear() > currentYear) ldt = null;
         return ldt;
     }
 }

@@ -20,7 +20,7 @@ public class PrintStatus extends Command {
         try {
             Checker.checkRepository(config.PROPERTY_FILE_PATH_STRING);
         } catch(CommandException ce) {
-            System.err.println("not a valid repository");
+            System.err.println(ce.getMessage());
             return;
         }
 

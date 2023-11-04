@@ -15,7 +15,8 @@ public class DeleteRepository extends Command {
     @Override
     public void executeCommand(String[] args, Configuration config) {
         File propertyFile = new File(config.PROPERTY_FILE_PATH_STRING, Configuration.PROPERTY_FILE_NAME_STRING);
-        if(propertyFile.delete()) {
+        File errorFolder = new File(config.PROPERTY_FILE_PATH_STRING, Configuration.ERROR_FOLDER_NAME);
+        if(propertyFile.delete() && errorFolder.delete()) {
             System.out.println("repository successfully deleted");
         } else {
             System.out.println("repository could not be deleted");

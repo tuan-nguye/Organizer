@@ -128,6 +128,7 @@ public class FileGraphOperation {
                 ICopy moveOp = new MoveReplace();
                 Path currDir = Path.of(node.path);
                 for(FileGraph.Node child : node.children.values()) {
+                    if(child.path.equals(errorFolderPath)) continue;
                     File childFolder = new File(child.path);
                     for(File f : childFolder.listFiles()) {
                         LocalDateTime ldt = DateExtractor.getDate(f);
