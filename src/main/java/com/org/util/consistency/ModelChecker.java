@@ -23,7 +23,7 @@ public class ModelChecker implements Subject<Integer> {
     private int threshold;
     // saved errors after check
     private Map<ModelError, List<FileGraph.Node>> errors = new HashMap<>();
-    private FileGraph.Node errorNode;
+    private String errorFolderPath;
 
     // subject/observer stuff
     private List<Observer> obs = new ArrayList<>();
@@ -48,9 +48,8 @@ public class ModelChecker implements Subject<Integer> {
         errors.clear();
         for(ModelError me : ModelError.values()) errors.put(me, new ArrayList<>());
         FileGraph.Node root = graph.getRoot();
-        String errorFolderPath = root.path + File.separator + Configuration.ERROR_FOLDER_NAME;
+        errorFolderPath = root.path + File.separator + Configuration.ERROR_FOLDER_NAME;
         if(!new File(errorFolderPath).exists()) errors.get(ModelError.ERROR_FOLDER_MISSING).add(null);
-        errorNode = root.children.get(errorFolderPath);
         checkAllDfs(graph.getRoot(), new ArrayList<>());
     }
 
@@ -63,7 +62,7 @@ public class ModelChecker implements Subject<Integer> {
      * @return returns the sum of files in child nodes
      */
     private int checkAllDfs(FileGraph.Node node, List<String> path) {
-        if(node == errorNode) return 0;
+        if(node.path.equals(errorFolderPath)) return 0;
         // add folder name to path
         String folderName = FileTools.getNameWithoutPrefix(graph.getRoot().path, node.path);
         path.add(folderName);
@@ -88,8 +87,11 @@ public class ModelChecker implements Subject<Integer> {
             }
         }
 
-        if(node.leaf && numFiles == 0) errors.get(ModelError.CAN_BE_REDUCED).add(node);
-        else if(!node.leaf && numFiles <= threshold) errors.get(ModelError.CAN_BE_REDUCED).add(node);
+        if(node != graph.getRoot()) {
+            if(node.leaf && numFiles == 0) errors.get(ModelError.CAN_BE_REDUCED).add(node);
+            else if(!node.leaf && numFiles <= threshold) errors.get(ModelError.CAN_BE_REDUCED).add(node);
+        }
+
 
         // update folder count
         foldersChecked++;

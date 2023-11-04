@@ -20,7 +20,7 @@ public class RepairCommand extends Command {
 
     @Override
     public void validateConfiguration(String[] args, Configuration config) throws CommandException {
-        Checker.checkRepository(config.PROPERTY_FILE_PATH_STRING);
+        Checker.checkRepositoryFile(config.PROPERTY_FILE_PATH_STRING);
 
         ModelChecker checker = new ModelChecker(config);
 

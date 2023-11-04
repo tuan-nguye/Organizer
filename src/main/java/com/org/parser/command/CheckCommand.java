@@ -16,7 +16,7 @@ import java.util.Map;
 public class CheckCommand extends Command {
     @Override
     public void validateConfiguration(String[] args, Configuration config) throws CommandException {
-        Checker.checkRepository(config.PROPERTY_FILE_PATH_STRING);
+        Checker.checkRepositoryFile(config.PROPERTY_FILE_PATH_STRING);
     }
 
     @Override

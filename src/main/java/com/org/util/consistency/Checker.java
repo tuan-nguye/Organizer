@@ -18,11 +18,21 @@ public class Checker {
     }
 
     public static void checkRepository(String path) throws CommandException {
+        checkRepositoryFile(path);
+        checkErrorFolder(path);
+    }
+
+    public static void checkRepositoryFile(String path) throws CommandException {
         File repo;
         if(path.isEmpty()) repo = new File(Configuration.PROPERTY_FILE_NAME_STRING);
         else repo = new File(path, Configuration.PROPERTY_FILE_NAME_STRING);
         if(!repo.exists()) throw new CommandException("not a repository");
+    }
 
+    public static void checkErrorFolder(String path) throws CommandException {
+        File repo;
+        if(path.isEmpty()) repo = new File(Configuration.PROPERTY_FILE_NAME_STRING);
+        else repo = new File(path, Configuration.PROPERTY_FILE_NAME_STRING);
         File errorFolder = new File(repo.getParentFile(), Configuration.ERROR_FOLDER_NAME);
         if(!errorFolder.exists()) throw new CommandException("error folder is missing, run this command to fix:\n organizer repair");
     }
