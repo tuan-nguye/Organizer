@@ -54,7 +54,7 @@ Initialize the repository in the current working directory and define the thresh
 
 `organizer init 500`
 
-Then, copy any files you want into the repository located in the current working directory by using the 'organizer' command and including the directory to the source.
+Then, copy any files you want into the repository, located in the current working directory, by using the 'organizer' command and including the directory to the source.
 
 `organizer organize path/to/source`
 
