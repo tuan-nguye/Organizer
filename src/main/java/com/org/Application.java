@@ -1,9 +1,8 @@
 package com.org;
 
-import com.org.parser.CommandException;
+import com.org.parser.command.CommandException;
 import com.org.parser.CommandLineParser;
 import com.org.parser.Configuration;
-import com.org.parser.ParseException;
 import com.org.parser.command.Command;
 
 import java.util.Arrays;

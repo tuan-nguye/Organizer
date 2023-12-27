@@ -1,6 +1,6 @@
 package tests.resources;
 
-import com.org.parser.CommandException;
+import com.org.parser.command.CommandException;
 import com.org.parser.Configuration;
 import com.org.parser.command.Command;
 import com.org.parser.command.InitializeRepository;

@@ -1,6 +1,6 @@
 package com.org.util.consistency;
 
-import com.org.parser.CommandException;
+import com.org.parser.command.CommandException;
 import com.org.parser.Configuration;
 
 import java.io.File;
