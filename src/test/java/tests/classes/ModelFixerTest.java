@@ -346,34 +346,4 @@ public class ModelFixerTest {
         assertEquals(numFilesBefore, numFilesAfter);
         resetRepo();
     }
-
-    @Test
-    public void test() {
-        DateExtractor.setIgnoreMark(true);
-        File folder = new File("D:\\Pictures\\mama_backup\\sortiert\\2002\\2002_jan\\2002_jan_1\\2002_jan_1_19h");
-        File img1 = new File(folder, "DSCF0043.jpg");
-        File img2 = new File(folder, "DSCF0043(1).jpg");
-
-        LocalDateTime ldt1 = DateExtractor.getDate(img1);
-        LocalDateTime ldt2 = DateExtractor.getDate(img2);
-
-        System.out.println(ldt1);
-        System.out.println(ldt2);
-        ldt1.truncatedTo(ChronoUnit.SECONDS);
-        ldt2.truncatedTo(ChronoUnit.SECONDS);
-
-        System.out.println("same: " + ldt1.equals(ldt2));
-        String fileName = FileTools.chooseFileName(folder.getAbsolutePath(), img1.getName(), ldt2);
-        System.out.println(fileName);
-    }
-
-    @Test
-    public void test2() {
-        File repo = new File("D:\\Pictures\\mama_backup\\sortiert");
-        Configuration cnfg = new Configuration();
-        cnfg.PROPERTY_FILE_PATH_STRING = repo.getAbsolutePath();
-        Organizer to = new ThresholdOrganizer(new Move(), 500, repo.getAbsolutePath());
-
-        to.copyAndOrganize("D:\\Pictures\\mama_backup\\unsortiert\\DCIM6\\Pictures\\Messenger");
-    }
 }

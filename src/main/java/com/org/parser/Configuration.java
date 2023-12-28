@@ -9,6 +9,11 @@ import com.org.util.FileTools;
 import java.io.File;
 import java.util.*;
 
+/**
+ * This class stores the current configuration with which the command is executed
+ * with. It stores all available commands, options, and various info like their
+ * names, description, etc. It also gives access to the properties of a repository.
+ */
 public class Configuration {
     /* file where properties are stored */
     // name of the property file
@@ -18,11 +23,12 @@ public class Configuration {
     // path to the repository and to the error folder
     public String PROPERTY_FILE_PATH_STRING = "";
 
+    // set of all available properties
     Set<String> propertyNames = new HashSet<>(Arrays.asList("folderSize"));
-
+    // set of all properties that can be modified
     Set<String> modifiableProperties = new HashSet<>(Arrays.asList("folderSize"));
 
-    /* available commands */
+    /* available commands with name, description, etc. */
     Command organizeCommand = new OrganizeFiles()
             .setName("organize")
             .setDescription("copy and organize all files according to their time stamp into the repository in the current working directory")
@@ -65,7 +71,7 @@ public class Configuration {
             .setDescription("read the date from all files in the current or the given directory and mark them to improve performance")
             .setCommandFormat("mark [/optional/directory]");
 
-    /* available options */
+    /* available options with name, description, etc. */
     Option replaceOption = new FlagOption()
             .setName("replace")
             .setDescription("replace files that already exist instead of skipping them");
@@ -85,9 +91,15 @@ public class Configuration {
             .setName("ignoreMark")
             .setDescription("ignores the mark set on the file and read the date from metadata instead");
 
-    public Configuration() {
-    }
+    /**
+     * Default empty constructor.
+     */
+    public Configuration() {}
 
+    /**
+     * Return a map with all available commands. The keys are the command's names.
+     * @return
+     */
     public Map<String, Command> allCommands() {
         Map<String, Command> allCommands = new HashMap<>();
         allCommands.put(organizeCommand.getName(), organizeCommand);
@@ -103,6 +115,10 @@ public class Configuration {
         return allCommands;
     }
 
+    /**
+     * Return a map with all available options. The keys are the option's names.
+     * @return
+     */
     public Map<String, Option> allOptions() {
         Map<String, Option> allOptions = new HashMap<>();
         allOptions.put(replaceOption.getName(), replaceOption);
@@ -112,14 +128,26 @@ public class Configuration {
         return allOptions;
     }
 
+    /**
+     * All properties in the repository given in property file
+     * @return
+     */
     public Properties getProperties() {
         return FileTools.readProperties(PROPERTY_FILE_PATH_STRING+ File.separator+PROPERTY_FILE_NAME_STRING);
     }
 
+    /**
+     * Get a set with all names of the properties.
+     * @return
+     */
     public Set<String> getPropertyNames() {
         return new HashSet<>(propertyNames);
     }
 
+    /**
+     * Get a set with all the names of the modifiable properties.
+     * @return
+     */
     public Set<String> getModifiableProperties() {
         return new HashSet<>(modifiableProperties);
     }
