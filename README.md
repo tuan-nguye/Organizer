@@ -4,7 +4,7 @@ This is a command line tool I created to sort files into a directory structure b
 
 The program maintains a file structure where files from the same date are located in the same directory. Each folder has a certain threshold. If exceeded all the files are moved into a lower layer. The layers indicate time units in decreasing order. They go from year --> month --> day of month --> hour --> minute --> second.
 
-In the example below, the threshold is equal to <b>1</b>. Here you can see how the files are organized and how the folders are named can be seen. Before, there are some text files and a csv file.
+In the example below, the threshold is equal to <b>1</b>. Here you can see how the files are organized and how the folders are named can be seen. These are the text and csv files that are about to be sorted:
 ```
 E:.
 ├───exampleFiles
@@ -45,6 +45,8 @@ E:.
 │   └───error
 
 ```
+
+This is a very small example. But the tool was created to handle even larger file volumes. Choosing a folder size of 1000, it successfully sorted 2 terabytes worth of videos and images.
 
 # Usage and Features
 
