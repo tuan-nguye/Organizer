@@ -14,7 +14,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * This class contains all tests for the FileGraph class and its functionality.
+ */
 public class FileGraphTest {
+    //
     private static String[] exampleFoldersStr = new String[] {
             "2021",
             "2022",
