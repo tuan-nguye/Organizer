@@ -99,7 +99,7 @@ public class ModelFixer implements Subject<Integer> {
      * @param errors
      * @return set of folders/nodes that can't be fixed by renaming
      */
-    private Set<FileGraph.Node> fixFolders(Map<ModelError, List<FileGraph.Node>> errors) {
+    public Set<FileGraph.Node> fixFolders(Map<ModelError, List<FileGraph.Node>> errors) {
         Set<FileGraph.Node> faultyFolders = getFaultyFolders(errors);
         Set<FileGraph.Node> toRestore = getRestorableFolders(errors);
 
@@ -420,7 +420,7 @@ public class ModelFixer implements Subject<Integer> {
      * @param errors map containing all errors and all folders associated to them
      * @param unrestorableFolders set of nodes/folders that are impossible to restore by renaming
      */
-    private void fixFiles(Map<ModelError, List<FileGraph.Node>> errors, Set<FileGraph.Node> unrestorableFolders) {
+    public void fixFiles(Map<ModelError, List<FileGraph.Node>> errors, Set<FileGraph.Node> unrestorableFolders) {
         // union of invalid folder name, above threshold, and files in non leaf folder
         unrestorableFolders.addAll(errors.get(ModelError.FILES_IN_NON_LEAF));
         // set to store folders exceeding their threshold

@@ -22,22 +22,34 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * This class contains all tests for the class ModelChecker.
+ */
 public class ModelCheckerTest {
+    // path to the repository root to perform the tests
     private static final String repoPath = Path.of("test-bin/repoModelCheck").toAbsolutePath().toString();
+    // configuration object needed for the command objects
     private static Configuration config;
+    // file graph object
     private static FileGraph graph;
+    // model checker object
     private static ModelChecker checker;
+    // maximum folder size threshold
     private static int threshold = 1;
+    // node reference to the error node
     private static FileGraph.Node errorNode;
 
+
     /**
+     * Prepares all objects and sets them to their initial state.
+     *
+     * structure of the initial state of the file graph with threshold = 1
      * "test-bin/repo/2010/test2.txt",
      * "test-bin/repo/2021/test4.txt",
      * "test-bin/repo/2023/2023_feb/test1.txt",
      * "test-bin/repo/2023/2023_märz/2023_märz_17/test3.txt",
      * "test-bin/repo/2023/2023_märz/2023_märz_21/test0.txt"
      */
-
     @BeforeAll
     public static void prepare() {
         config = new Configuration();
@@ -53,6 +65,10 @@ public class ModelCheckerTest {
         errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
     }
 
+    /**
+     * All files are in their correct location. This test makes sure that the modelchecker function correctFolder()
+     * returns true on all folders by recursively iterating through the file graph.
+     */
     @Test
     public void testFileInCorrectFolder() {
         Deque<FileGraph.Node> stack = new ArrayDeque<>();
@@ -74,9 +90,14 @@ public class ModelCheckerTest {
         }
     }
 
+    /**
+     * This test intentionally creates a folder in the wrong directory. The function correctFolder() should return
+     * false on that file when called.
+     */
     @Test
     public void testFileInWrongFolder() {
         File folder = new File(repoPath, "2009");
+        // newly creates files have the current date as lastModified field and its way past 2009
         File falseFile = new File(folder, "falseFile.txt");
 
         try {
@@ -85,22 +106,26 @@ public class ModelCheckerTest {
         } catch(IOException ioe) {
             fail();
         }
-
+        // update the graph after creating a new file and folder
         graph.update(graph.getRoot());
-
+        // get the node for the folder in 2009
         FileGraph.Node node = graph.getNode(LocalDateTime.of(2009, 1, 1, 1, 1));
         assertFalse(checker.correctFolder(node, falseFile));
-
+        // reset the repo to its original state
         falseFile.delete();
         folder.delete();
         graph.update(graph.getRoot());
     }
 
+    /**
+     * The function validNumOfFiles() should always return true on every node if the file graph structure is correct,
+     * e.g. every folder has fewer files than the threshold=1.
+     */
     @Test
     public void testUnderThreshold() {
         Deque<FileGraph.Node> stack = new ArrayDeque<>();
         stack.push(graph.getRoot());
-
+        // recursively iterate through the file graph with a stack
         while(!stack.isEmpty()) {
             FileGraph.Node node = stack.pop();
 
@@ -114,9 +139,15 @@ public class ModelCheckerTest {
         }
     }
 
+    /**
+     * Create a new file in a folder so that the threshold for that folder is exceeded. The checker should be able
+     * to detect that with validNumOfFiles().
+     */
     @Test
     public void testAboveThreshold() {
+        // get the 2010 node which already contains one file so: folder size == threshold
         FileGraph.Node node = graph.getNode(LocalDateTime.of(2010, 1, 1, 1, 1));
+        // create a new file in that folder, now the folder size is two > threshold
         File folder = new File(node.path);
         File incorrectFile = new File(folder, "incorrectFile.txt");
 
@@ -125,26 +156,31 @@ public class ModelCheckerTest {
         } catch(IOException ioe) {
             fail();
         }
-
+        // update the file graph after creating a new file, also updates the file count for every node
         graph.update(node);
-
+        // the node contains too many files now
         assertFalse(checker.validNumOfFiles(node));
-
+        // reset the state of the repository
         incorrectFile.delete();
         graph.update(node);
     }
 
+    /**
+     * Test that the function validFolderName() works correctly for valid folder names. It should return true
+     * for all folders in the repository.
+     */
     @Test
     public void testValidFolderName() {
         Deque<FileGraph.Node> stack = new ArrayDeque<>();
         FileGraph.Node root = graph.getRoot();
         graph.update(root);
         stack.push(root);
-
+        // recursively iterate through the file graph
         while(!stack.isEmpty()) {
             FileGraph.Node node = stack.pop();
             if(node == errorNode) continue;
             String folderName = FileTools.getNameWithoutPrefix(root.path, node.path);
+            // should return true on every folder by definition
             assertTrue(checker.validFolderName(folderName));
 
             for(FileGraph.Node children : node.children.values()) {
@@ -153,48 +189,71 @@ public class ModelCheckerTest {
         }
     }
 
+
+
+    /**
+     * Test the validFolderStructure() function. It should return true on every path that was found in the unchanged
+     * file graph.
+     */
     @Test
     public void testValidFolderStructure() {
         testValidFolderStructureRec(graph.getRoot(), new ArrayList<>());
     }
 
+    /**
+     * Recursive implementation of the testValidFolderStructure() test function.
+     * @param node current node
+     * @param folders current path to the node as a list of string folders
+     */
     private void testValidFolderStructureRec(FileGraph.Node node, List<String> folders) {
         if(node == errorNode) return;
         String folderName = FileTools.getNameWithoutPrefix(graph.getRoot().path, node.path);
         folders.add(folderName);
-
+        // only call the function on leaf nodes when the path is complete
         if(!node.leaf) {
             for(FileGraph.Node next : node.children.values()) {
                 testValidFolderStructureRec(next, folders);
             }
         } else {
-            //System.out.println(folders);
+            // should always return true
             assertTrue(checker.validFolderStructure(folders));
         }
 
         folders.remove(folders.size()-1);
     }
 
+    /**
+     * This tests that the validFolderStructure() function should return false on an incorrect structure.
+     */
     @Test
     public void testValidFolderStructureFalse() {
+        // "2010_asdf" is in invalid structure because "asdf" is not a correct name for a month
         List<String> folders = List.of("", "2010", "2010_asdf");
         assertFalse(checker.validFolderStructure(folders));
     }
 
+    /**
+     * Call the checkAll() function and make sure that no errors were found as the file graph is correct.
+     */
     @Test
     public void checkAllCorrect() {
         checker.checkAll();
         String out = "";
+        // add the error to the out string if the list of nodes is not empty
         for(Map.Entry<ModelError, List<FileGraph.Node>> e : checker.getErrors().entrySet()) {
             if(!e.getValue().isEmpty()) out += e + "\n";
         }
-
+        // out should be empty because there are no errors
         if(!out.isEmpty()) fail("errors detected even though everything is correct: \n" + out);
     }
 
+    /**
+     * Call the checkAll() function after injecting multiple files in the wrong locations. Each error should appear
+     * exactly once.
+     */
     @Test
     public void checkAllTestIncorrectSingle() {
-        // file in wrong folder
+        // create a file in the wrong folder
         File fileWrongFolder = new File(repoPath+File.separator+"1970", "wrong_folder.txt");
 
         try {
@@ -204,7 +263,7 @@ public class ModelCheckerTest {
             fail(e.getMessage());
         }
 
-        // incorrect folder name
+        // create a folder with an incorrect folder name
         File folderInvalidName = new File(repoPath+File.separator+"el_wiwi");
         try {
             folderInvalidName.mkdirs();
@@ -212,7 +271,7 @@ public class ModelCheckerTest {
             fail(e.getMessage());
         }
 
-        // number of files above threshold
+        // create a file in a folder so that the threshold is exceeded
         long lm = 1079387493013l;
         LocalDateTime ldt = FileTools.dateTime(lm);
         FileGraph.Node node = graph.getNode(ldt);
@@ -229,7 +288,7 @@ public class ModelCheckerTest {
             fail(e.getMessage());
         }
 
-        // files in non leaf node
+        // add a file in a non leaf node
         File folderNonLeaf = new File(repoPath+File.separator+"2023");
         File fileNonLeaf = new File(folderNonLeaf, "file_inner_node.txt");
         try {
@@ -239,10 +298,13 @@ public class ModelCheckerTest {
             fail(e.getMessage());
         }
 
+        // delete the mandatory error folder that should always exist in a repository
         File errorFolder = new File(repoPath + File.separator + Configuration.ERROR_FOLDER_NAME);
         errorFolder.delete();
 
+        // update the graph after the changes
         graph.update(graph.getRoot());
+        // execute the checker function that checks for all errors at once
         checker.checkAll();
 
         // check if all errors have been found
@@ -258,23 +320,28 @@ public class ModelCheckerTest {
         assertEquals(errors.get(ModelError.FILES_IN_NON_LEAF).get(0).path, folderNonLeaf.getAbsolutePath());
         assertEquals(errors.get(ModelError.INVALID_FOLDER_STRUCTURE).get(0).path, folderInvalidName.getAbsolutePath());
 
+        // delete the temporarily created files
         FileTools.delete(fileWrongFolder.getParentFile());
         FileTools.delete(folderInvalidName);
         FileTools.delete(folderAboveThreshold);
         FileTools.delete(fileNonLeaf);
         errorFolder.mkdir();
 
+        // update the static variables to their initial state
         graph.update(graph.getRoot());
         FileGraph.Node root = graph.getRoot();
         errorNode = root.children.get(root.path + File.separator + Configuration.ERROR_FOLDER_NAME);
     }
 
-    // folder with multiple errors
-    // should have 3 errors: invalid name, above threshold, and wrong structure
-    // files should not get errors because the parent folder already takes care of that
+    /**
+     * Create a folder containing multiple errors and run the checkAll() function. All errors should be found. The folder
+     * will have three errors: invalid name, above threshold, and wrong folder structure.
+     */
     @Test
     public void testCheckAllIncorrectMultiple() {
+        // create a folder with an incorrect name. all folder names should be parsed dates separated by underscores
         File folderInvalidNameAboveThreshold = new File(repoPath+File.separator+"el_wiwi");
+        // create two files to insert into the folder exceeding the threshold of one
         File f0 = new File(folderInvalidNameAboveThreshold, "el_wiwi0.png");
         File f1 = new File(folderInvalidNameAboveThreshold, "el_wiwi1.png");
 
@@ -286,16 +353,19 @@ public class ModelCheckerTest {
             fail(e.getMessage());
         }
 
+        // update the graph after the changes to the file graph and execute the function
         graph.update(graph.getRoot());
         checker.checkAll();
 
+        // count the number of errors
         int numErr = 0;
         for(Map.Entry<ModelError, List<FileGraph.Node>> e : checker.getErrors().entrySet()) {
             numErr += e.getValue().size();
         }
-
+        // the count should be equal to three: incorrect name, above threshold, and invalid folder structure
         assertEquals(3, numErr);
 
+        // reset the repo by deleting the created files
         FileTools.delete(folderInvalidNameAboveThreshold);
     }
 }

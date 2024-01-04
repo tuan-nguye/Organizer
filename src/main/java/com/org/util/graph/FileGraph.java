@@ -155,7 +155,7 @@ public class FileGraph {
     /**
      * Returns the leaf node for the given datetime. The function searches through
      * the tree to find the correct leaf node according to the year, month, day of
-     * month, etc. The path of the returned node might not exist yet, so it needs
+     * month, etc. The path of the returned node might not exist yet, so it may need
      * to be created first.
      * @param dateTime date time object
      * @return the leaf node
@@ -169,8 +169,7 @@ public class FileGraph {
         StringBuilder folderName = new StringBuilder();
         boolean first = true;
 
-        // iterate through the tree starting from the root and stop if a leaf
-        // node is reached
+        // iterate through the tree starting from the root and stop if a leaf node is reached
         while(it.hasNext()) {
             if(first) first = false;
             else folderName.append("_");
@@ -179,8 +178,8 @@ public class FileGraph {
             // reached the end if the folder is not in the children map of the node
             if(!node.children.containsKey(path.toString())) {
                 if(!node.leaf) {
-                    // if the node is not a leaf node but an inner node, the folder
-                    // was not yet created. A new node will be created
+                    // if the node is not a leaf node but an inner node, the correct subfolder
+                    // was not yet created because it wasn't needed. A new node will be created
                     Node next = new Node(path.toString(), node.depth+1);
                     node.children.put(next.path, next);
                     node = next;

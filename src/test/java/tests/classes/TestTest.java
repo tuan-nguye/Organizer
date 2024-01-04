@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.TimeZone;
 
+/**
+ * Sandbox test class for testing out various things. The tests in this class are not part of the test suite.
+ */
 public class TestTest {
     //@Test
     public void test() {
